@@ -37,7 +37,12 @@ const SAFE = {
   memoryStats: async () => ({ text: "Memórias salvas: " + memory.stats() }),
   openVscode: async ({ root }) => openApp("code.cmd", [root], root, "VS Code"),
   openFolder: async ({ root }) => openApp(process.platform === "win32" ? "explorer.exe" : "xdg-open", [root], root, "pasta do NOX"),
-  openBrowser: async () => openApp(process.platform === "win32" ? "cmd.exe" : "xdg-open", process.platform === "win32" ? ["/c", "start", "", "https://www.google.com"] : ["https://www.google.com"], process.cwd(), "navegador")
+  openBrowser: async () => openApp(process.platform === "win32" ? "cmd.exe" : "xdg-open", process.platform === "win32" ? ["/c", "start", "", "https://www.google.com"] : ["https://www.google.com"], process.cwd(), "navegador"),
+  node: async () => ({ text: "Node.js: " + process.version }),
+  platform: async () => ({ text: "Sistema: " + process.platform + " | arquitetura: " + process.arch + " | Node: " + process.version }),
+  time: async () => ({ text: "Hora local: " + new Date().toLocaleString("pt-BR") }),
+  gitRemote: async ({ root }) => run("git", ["-C", root, "remote", "-v"]),
+  projectInfo: async ({ root }) => ({ text: projectInfo(root) })
 };
 
 function formatUptime(seconds) {
@@ -75,6 +80,29 @@ function listProjects(root) {
     }
   }
   return out.slice(0, 60).join("\n") || "Nenhum projeto encontrado.";
+}
+
+function projectInfo(root) {
+  const pkg = path.join(root, "package.json");
+  const git = path.join(root, ".git");
+  const entries = fs.existsSync(root) ? fs.readdirSync(root, { withFileTypes: true }) : [];
+  const files = entries.filter(x => x.isFile()).length;
+  const dirs = entries.filter(x => x.isDirectory()).length;
+  const lines = [
+    "Projeto: " + path.basename(root),
+    "Pasta: " + root,
+    "Git: " + (fs.existsSync(git) ? "sim" : "não"),
+    "package.json: " + (fs.existsSync(pkg) ? "sim" : "não"),
+    "Itens: " + files + " arquivos, " + dirs + " pastas"
+  ];
+  if (fs.existsSync(pkg)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(pkg, "utf8"));
+      lines.push("Descrição: " + (data.description || "não definida"));
+      lines.push("Scripts: " + Object.keys(data.scripts || {}).join(", "));
+    } catch {}
+  }
+  return lines.join("\n");
 }
 
 function diskInfo(root) {
@@ -122,6 +150,16 @@ function openApp(file, args, cwd, label) {
 function normalize(input) {
   return String(input || "").trim().toLowerCase().normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "").replace(/[?!.]+$/g, "").replace(/\s+/g, " ");
+}
+
+function detectGreeting(input) {
+  const lower = normalize(input);
+  return /^(oi|ola|olá|bom dia|boa tarde|boa noite|e ai|e aí|hello|hey)$/.test(lower);
+}
+
+function detectThanks(input) {
+  const lower = normalize(input);
+  return /^(obrigado|obrigada|valeu|vlw|muito obrigado|muito obrigada)$/.test(lower);
 }
 
 function detectIdentity(input) {
@@ -177,6 +215,11 @@ function detectCommandKeys(input) {
   if (lower.includes("abrir vscode") || lower.includes("abrir vs code")) add("openVscode");
   if (lower.includes("abrir a pasta do nox") || lower.includes("abrir pasta do nox")) add("openFolder");
   if (lower.includes("abrir navegador")) add("openBrowser");
+  if (lower === "node" || lower.includes("versao do node") || lower.includes("versão do node")) add("node");
+  if (lower.includes("sistema operacional") || lower.includes("qual sistema") || lower.includes("qual plataforma")) add("platform");
+  if (lower === "hora" || lower.includes("que horas") || lower.includes("horas sao") || lower.includes("horas são")) add("time");
+  if (lower.includes("git remote") || lower.includes("repositorio remoto") || lower.includes("repositório remoto")) add("gitRemote");
+  if (lower.includes("informacoes do projeto") || lower.includes("informações do projeto") || lower.includes("info do projeto")) add("projectInfo");
 
   return keys;
 }
@@ -192,6 +235,14 @@ function parseMemoryCommand(input) {
 }
 
 async function executeNaturalCommands(input, ctx) {
+  if (detectGreeting(input)) {
+    return { matched: true, text: "Olá, senhor Gustavo. O NOX está online.", commands: ["greeting"] };
+  }
+
+  if (detectThanks(input)) {
+    return { matched: true, text: "Disponha, senhor Gustavo.", commands: ["thanks"] };
+  }
+
   if (detectIdentity(input)) {
     return { matched: true, text: "Eu sou o NOX.", commands: ["identity"] };
   }
@@ -219,7 +270,9 @@ async function executeNaturalCommands(input, ctx) {
     gitStatus: "Status do Git", gitLog: "Últimos commits", uptime: "Tempo ligado",
     pwd: "Pasta atual", listRoot: "Conteúdo da pasta", projects: "Projetos",
     processes: "Processos", memoryList: "Memórias", memoryStats: "Memória do NOX",
-    openVscode: "VS Code", openFolder: "Pasta", openBrowser: "Navegador"
+    openVscode: "VS Code", openFolder: "Pasta", openBrowser: "Navegador",
+    node: "Node.js", platform: "Plataforma", time: "Hora", gitRemote: "Git remoto",
+    projectInfo: "Projeto"
   };
 
   const results = [];
@@ -243,4 +296,4 @@ async function executeCommand(input, ctx) {
   return SAFE[keys[0]](ctx);
 }
 
-module.exports = { executeCommand, executeNaturalCommands, detectCommandKeys, normalize, detectIdentity, detectCreator };
+module.exports = { executeCommand, executeNaturalCommands, detectCommandKeys, normalize, detectIdentity, detectCreator, detectGreeting, detectThanks };
