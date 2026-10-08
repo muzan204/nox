@@ -1,15 +1,19 @@
 package com.muzan204.nox
 
 import android.Manifest
-import android.content.Intent
+import android.app.AlertDialog
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.speech.RecognizerIntent
+import android.speech.RecognitionListener
 import android.speech.SpeechRecognizer
 import android.view.Window
+import android.widget.EditText
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.io.File
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
@@ -17,6 +21,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var api: NoxApi
     private var recognizer: SpeechRecognizer? = null
     private var listening = false
+    private var player: MediaPlayer? = null
+    private var downAt = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,35 +33,40 @@ class MainActivity : ComponentActivity() {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 10)
+
+        face.setOnTouchListener { _, event ->
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> { downAt = System.currentTimeMillis(); true }
+                android.view.MotionEvent.ACTION_UP -> {
+                    val held = System.currentTimeMillis() - downAt > 800
+                    if (held) showConnectionSettings() else onFaceTapped()
+                    true
+                }
+                else -> true
+            }
+        }
     }
 
-    fun onFaceTapped() {
-        if (listening) return
-        startListening()
-    }
+    fun onFaceTapped() { if (!listening) startListening() }
 
     private fun startListening() {
-        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
-            face.state = "ERROR"; return
-        }
+        if (!SpeechRecognizer.isRecognitionAvailable(this)) { face.state = "ERROR"; return }
         listening = true
         face.state = "LISTENING"
         recognizer?.destroy()
         recognizer = SpeechRecognizer.createSpeechRecognizer(this)
         recognizer!!.setRecognitionListener(object : SimpleRecognitionListener() {
-            override fun onResults(results: android.os.Bundle) {
+            override fun onResults(results: Bundle) {
                 listening = false
                 val text = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty()
                 if (text.isNotBlank()) send(text) else face.state = "IDLE"
             }
             override fun onError(error: Int) { listening = false; face.state = "IDLE" }
-            override fun onEndOfSpeech() { if (listening) face.state = "THINKING" }
         })
         recognizer!!.startListening(RecognizerIntent().apply {
             action = RecognizerIntent.ACTION_RECOGNIZE_SPEECH
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale("pt", "BR"))
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
         })
     }
 
@@ -63,17 +74,55 @@ class MainActivity : ComponentActivity() {
         face.state = "THINKING"
         Thread {
             val result = api.chat(text)
-            runOnUiThread { face.state = if (result != null) "SPEAKING" else "ERROR" }
+            if (result == null) {
+                runOnUiThread { face.state = "ERROR" }
+                return@Thread
+            }
+            runOnUiThread { face.state = "SPEAKING" }
+            val audio = api.voice(result.text)
+            if (audio != null) playAudio(audio)
+            else runOnUiThread { face.state = "IDLE" }
         }.start()
+    }
+
+    private fun playAudio(bytes: ByteArray) {
+        runOnUiThread {
+            try {
+                player?.release()
+                val file = File(cacheDir, "nox-voice.mp3")
+                file.writeBytes(bytes)
+                player = MediaPlayer().apply {
+                    setDataSource(file.absolutePath)
+                    setOnCompletionListener { release(); player = null; face.state = "IDLE" }
+                    setOnErrorListener { _, _, _ -> face.state = "ERROR"; true }
+                    prepare()
+                    start()
+                }
+            } catch (_: Exception) { face.state = "ERROR" }
+        }
+    }
+
+    private fun showConnectionSettings() {
+        val input = EditText(this)
+        input.setText(api.baseUrl())
+        input.hint = "http://192.168.1.10:8765"
+        AlertDialog.Builder(this)
+            .setTitle("NOX Core")
+            .setMessage("Endereço do Termux ou computador na mesma rede.")
+            .setView(input)
+            .setPositiveButton("Salvar") { _, _ -> api.saveBaseUrl(input.text.toString()) }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     override fun onDestroy() {
         recognizer?.destroy()
+        player?.release()
         super.onDestroy()
     }
 }
 
-open class SimpleRecognitionListener : android.speech.RecognitionListener {
+open class SimpleRecognitionListener : RecognitionListener {
     override fun onReadyForSpeech(params: Bundle?) {}
     override fun onBeginningOfSpeech() {}
     override fun onRmsChanged(rmsdB: Float) {}
