@@ -28,3 +28,10 @@ node_modules/
 # Temporários
 .tmp/
 temp/
+android/.gradle/
+android/build/
+core/server/*.bak
+core/server/*.bak-*
+memory/*.db
+memory/*.db-shm
+memory/*.db-wal

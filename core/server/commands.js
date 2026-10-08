@@ -248,7 +248,7 @@ async function executeNaturalCommands(input, ctx) {
   }
 
   if (detectCreator(input)) {
-    return { matched: true, text: "O senhor Gustavo.", commands: ["creator"] };
+    return { matched: true, text: "Fui criado pelo senhor Gustavo.", commands: ["creator"] };
   }
 
   const memCommand = parseMemoryCommand(input);
