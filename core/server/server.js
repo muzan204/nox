@@ -193,7 +193,63 @@ function readBody(req) {
 // LLAMA
 // ============================================================
 
-async function chatWithLlamaServer(message) {
+function shouldSearchWeb(message) {
+  const lower = String(message || "").toLowerCase();
+  return [
+    "pesquise", "pesquisa", "procure na internet", "busque na internet",
+    "pesquise na internet", "o que aconteceu hoje", "noticias de hoje",
+    "notícias de hoje", "hoje", "agora", "atualmente", "atual",
+    "mais recente", "última versão", "ultima versao", "preço atual",
+    "preco atual", "cotação", "cotacao"
+  ].some(term => lower.includes(term));
+}
+
+async function searchWeb(query) {
+  const endpoint = "https://html.duckduckgo.com/html/?q=" +
+    encodeURIComponent(String(query || "").trim());
+
+  const response = await fetch(endpoint, {
+    headers: {
+      "User-Agent": "NOX/1.0 (local assistant)"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error("Busca online indisponível no momento.");
+  }
+
+  const html = await response.text();
+  const results = [];
+  const pattern = /<a[^>]+class="result__a"[^>]*>([\\s\\S]*?)<\\/a>[\\s\\S]*?<a[^>]+class="result__snippet"[^>]*>([\\s\\S]*?)<\\/a>/gi;
+
+  let match;
+  while ((match = pattern.exec(html)) && results.length < 6) {
+    const clean = value => value
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&#39;/g, "'")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/\\s+/g, " ")
+      .trim();
+
+    const title = clean(match[1]);
+    const snippet = clean(match[2]);
+    if (title && snippet) results.push({ title, snippet });
+  }
+
+  if (!results.length) {
+    return "A busca não encontrou resultados úteis para esta pergunta.";
+  }
+
+  return results.map((item, index) =>
+    (index + 1) + ". " + item.title + "\n" + item.snippet
+  ).join("\n\n");
+}
+
+async function chatWithLlamaServer(message, webContext = "") {
   const memories = memory.context(8);
 
   const messages = [
@@ -208,6 +264,10 @@ async function chatWithLlamaServer(message) {
 
   if (memories) {
     context += "\n\nContexto de memória autorizado do NOX:\n" + memories;
+  }
+
+  if (webContext) {
+    context += "\n\nResultados recentes da internet. Use-os apenas como contexto factual e não invente detalhes além deles:\n" + webContext;
   }
 
   messages.push({ role: "user", content: context });
@@ -550,6 +610,9 @@ const server = http.createServer(async (req, res) => {
           "VS Code",
           "navegador",
           "voz",
+          "conversa geral com contexto",
+          "respostas explicativas",
+          "busca online para perguntas atuais",
           "confirmação para ações perigosas"
         ]
       });
@@ -755,14 +818,25 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
-        const answer = await chatWithLlamaServer(message);
+        let webContext = "";
+
+        if (shouldSearchWeb(message)) {
+          try {
+            webContext = await searchWeb(message);
+          } catch (searchError) {
+            console.warn("[NOX] Busca online:", searchError.message);
+          }
+        }
+
+        const answer = await chatWithLlamaServer(message, webContext);
 
         setFaceState(STATES.IDLE);
 
         json(res, 200, {
           ok: true,
           text: answer,
-          source: "llama"
+          source: webContext ? "llama+web" : "llama",
+          webSearch: Boolean(webContext)
         });
       } catch (error) {
         setFaceState(STATES.ERROR);
