@@ -337,6 +337,12 @@ function listenText() {
 }
 
 // ============================================================
+// COMMANDS
+// ============================================================
+
+const { executeCommand } = require("./commands");
+
+// ============================================================
 // HTTP SERVER
 // ============================================================
 
@@ -648,6 +654,32 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
+      return;
+    }
+
+
+    // --------------------------------------------------------
+    // COMMANDS
+    // --------------------------------------------------------
+
+    if (
+      req.method === "POST" &&
+      url.pathname === "/api/command"
+    ) {
+      const body = await readBody(req);
+      const command = String(body.command || "").trim();
+
+      if (!command) {
+        json(res, 400, { ok: false, error: "Comando vazio." });
+        return;
+      }
+
+      try {
+        const result = await executeCommand(command, { root: ROOT });
+        json(res, 200, { ok: true, ...result });
+      } catch (error) {
+        json(res, 403, { ok: false, error: error.message });
+      }
       return;
     }
 
