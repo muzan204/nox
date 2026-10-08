@@ -55,12 +55,27 @@ const PORT = Number(config.server?.port || 8765);
 const LLAMA_BASE_URL =
   config.llamaServer?.baseUrl || "http://127.0.0.1:8080";
 
-const MAX_TOKENS = Number(config.llamaServer?.maxTokens || 48);
+// Respostas gerais precisam de espaço suficiente para explicar assuntos.
+const CONFIG_MAX_TOKENS = Number(config.llamaServer?.maxTokens || 256);
+const MAX_TOKENS = Math.max(256, CONFIG_MAX_TOKENS);
 const TEMPERATURE = Number(config.llamaServer?.temperature || 0.7);
 
-const SYSTEM_PROMPT =
+const SYSTEM_PROMPT = [
   config.assistant?.systemPrompt ||
-  "Você é NOX, assistente pessoal local do senhor Gustavo. Responda em português do Brasil.";
+    "Você é NOX, assistente pessoal local do senhor Gustavo. Responda em português do Brasil.",
+  "",
+  "REGRAS DO NOX:",
+  "- Você é um assistente geral, não apenas um executor de comandos.",
+  "- Responda perguntas de conhecimentos gerais, programação, matemática, estudos, tecnologia, escrita e conversas normalmente.",
+  "- Entenda perguntas mesmo quando estiverem escritas de forma informal ou com erros de digitação.",
+  "- Responda diretamente ao que o usuário perguntou.",
+  "- Explique passo a passo quando a pergunta exigir explicação.",
+  "- Não diga que é apenas um modelo de linguagem.",
+  "- Não invente fatos. Quando não souber ou não tiver informação suficiente, deixe isso claro.",
+  "- Use português do Brasil, salvo se o usuário pedir outro idioma.",
+  "- Chame o usuário de senhor Gustavo quando isso soar natural.",
+  "- Não execute comandos do computador apenas porque foram mencionados na conversa; comandos do sistema são tratados separadamente pelo Core."
+].join("\n");
 
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || "";
 const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "";
@@ -90,6 +105,11 @@ let voiceBusy = false;
 let listenBusy = false;
 
 const clients = new Set();
+
+// Histórico curto da conversa para o NOX entender referências como
+// "isso", "aquilo", "e depois?" sem depender somente da memória persistente.
+const conversationHistory = [];
+const MAX_HISTORY = 10;
 
 // ============================================================
 // HELPERS
@@ -175,9 +195,22 @@ function readBody(req) {
 
 async function chatWithLlamaServer(message) {
   const memories = memory.context(8);
-  const enrichedMessage = memories
-    ? message + "\n\nContexto de memória autorizado do NOX:\n" + memories
-    : message;
+
+  const messages = [
+    { role: "system", content: SYSTEM_PROMPT }
+  ];
+
+  for (const item of conversationHistory.slice(-MAX_HISTORY)) {
+    messages.push(item);
+  }
+
+  let context = message;
+
+  if (memories) {
+    context += "\n\nContexto de memória autorizado do NOX:\n" + memories;
+  }
+
+  messages.push({ role: "user", content: context });
 
   const response = await fetch(
     `${LLAMA_BASE_URL}/v1/chat/completions`,
@@ -187,16 +220,7 @@ async function chatWithLlamaServer(message) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        messages: [
-          {
-            role: "system",
-            content: SYSTEM_PROMPT
-          },
-          {
-            role: "user",
-            content: enrichedMessage
-          }
-        ],
+        messages,
         temperature: TEMPERATURE,
         max_tokens: MAX_TOKENS,
         stream: false
@@ -219,6 +243,15 @@ async function chatWithLlamaServer(message) {
 
   if (!answer) {
     throw new Error("O modelo não retornou uma resposta.");
+  }
+
+  conversationHistory.push(
+    { role: "user", content: message },
+    { role: "assistant", content: answer }
+  );
+
+  while (conversationHistory.length > MAX_HISTORY) {
+    conversationHistory.shift();
   }
 
   return answer;
