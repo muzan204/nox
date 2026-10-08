@@ -163,6 +163,14 @@ function parseMemoryCommand(input) {
 }
 
 async function executeNaturalCommands(input, ctx) {
+  if (detectIdentity(input)) {
+    return { matched: true, text: "Eu sou o NOX.", commands: ["identity"] };
+  }
+
+  if (detectCreator(input)) {
+    return { matched: true, text: "O senhor Gustavo.", commands: ["creator"] };
+  }
+
   const memCommand = parseMemoryCommand(input);
   if (memCommand) {
     if (memCommand.type === "remember") {
