@@ -479,6 +479,44 @@ const server = http.createServer(async (req, res) => {
     }
 
     // --------------------------------------------------------
+    // MEMORY
+    // --------------------------------------------------------
+
+    if (req.method === "GET" && url.pathname === "/api/memory") {
+      const query = url.searchParams.get("q") || "";
+      json(res, 200, {
+        ok: true,
+        count: memory.stats(),
+        memories: memory.search(query, 50)
+      });
+      return;
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/memory") {
+      const body = await readBody(req);
+      const action = String(body.action || "").trim().toLowerCase();
+
+      try {
+        if (action === "remember") {
+          const result = memory.remember(body.value, body.key || null, body.kind || "fact");
+          json(res, 200, { ok: true, action, ...result });
+          return;
+        }
+
+        if (action === "forget") {
+          const removed = memory.forget(body.query);
+          json(res, 200, { ok: true, action, removed });
+          return;
+        }
+
+        throw new Error("Ação de memória inválida.");
+      } catch (error) {
+        json(res, 400, { ok: false, error: error.message });
+      }
+      return;
+    }
+
+    // --------------------------------------------------------
     // SSE
     // --------------------------------------------------------
 
