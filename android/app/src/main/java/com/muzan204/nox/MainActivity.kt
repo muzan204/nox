@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.RecognitionListener
@@ -23,6 +25,7 @@ class MainActivity : ComponentActivity() {
     private var listening = false
     private var player: MediaPlayer? = null
     private var downAt = 0L
+    private val wakeReceiver = object : BroadcastReceiver() { override fun onReceive(c: android.content.Context?, i: android.content.Intent?) { if (!listening) startListening() } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +33,8 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.activity_main)
         face = findViewById(R.id.face)
         api = NoxApi(this)
+        registerReceiver(wakeReceiver, IntentFilter("com.muzan204.nox.WAKE"), RECEIVER_NOT_EXPORTED)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) startService(Intent(this, WakeWordService::class.java))
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 10)
@@ -117,6 +122,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         recognizer?.destroy()
+        unregisterReceiver(wakeReceiver)
+        stopService(Intent(this, WakeWordService::class.java))
         player?.release()
         super.onDestroy()
     }
