@@ -1,4 +1,4 @@
-# NOX 1.0
+# NOX 1.2
 
 Assistente pessoal local para Android/Termux, com carinha nativa, voz, memória local, comandos seguros e conexão opcional com computador.
 
@@ -25,6 +25,15 @@ Assistente pessoal local para Android/Termux, com carinha nativa, voz, memória 
 O navegador deixa de ser a interface principal. A pasta `android/` contém o aplicativo Android nativo.
 
 ## Recursos
+
+### Evolução 1.2
+
+- personalidade determinística para identidade, criador, saudações e agradecimentos;
+- estado facial `SURPRISED` adicionado ao Android;
+- endpoint `GET /api/capabilities` para descoberta das capacidades do Core;
+- status do Core com versão do Node, plataforma, arquitetura, uptime e quantidade de memórias;
+- ferramentas adicionais para Node.js, plataforma, hora, Git remoto e informações do projeto;
+- base preparada para evoluir comandos em módulos de habilidades (skills), mantendo a allowlist e a segurança.
 
 - carinha nativa com estados IDLE, LISTENING, THINKING, SPEAKING, HAPPY, CONFUSED e ERROR;
 - toque na carinha para falar e resposta por TTS do Android;
@@ -157,6 +166,6 @@ A `ui/face.html` continua disponível como fallback/diagnóstico, mas não é ma
 
 ## Status
 
-**NOX 1.1 — Core + memória + ferramentas + ponte Android**
+**NOX 1.2 — Core + memória + ferramentas + personalidade + ponte Android**
 
 A camada Android, conexão Core/PC, voz, palavra-chave e comandos seguros estão preparadas. A próxima etapa é finalizar o banco SQLite de memória e evoluir as ferramentas autorizadas.
