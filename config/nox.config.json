@@ -1,8 +1,8 @@
 {
   "name": "NOX",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "server": {
-    "host": "127.0.0.1",
+    "host": "0.0.0.0",
     "port": 8765
   },
   "llamaServer": {
@@ -17,5 +17,23 @@
     "language": "pt-BR",
     "wakeWord": "Nox",
     "systemPrompt": "Você é NOX, assistente pessoal local do senhor Gustavo. Responda sempre em português do Brasil. Chame o usuário de senhor Gustavo. Seja natural, claro, objetivo e amigável. Dê respostas curtas por padrão, especialmente no celular. Não invente informações. Se não souber, diga que não sabe."
+  },
+  "mobile": {
+    "enabled": true,
+    "defaultServerUrl": "http://127.0.0.1:8765",
+    "wakeWord": "NOX",
+    "tapToTalk": true
+  },
+  "memory": {
+    "engine": "sqlite",
+    "path": "memory/nox.db"
+  },
+  "commands": {
+    "enabled": true,
+    "allowlist": [
+      "status",
+      "pwd",
+      "git status"
+    ]
   }
 }
