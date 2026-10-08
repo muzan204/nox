@@ -21,6 +21,7 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
     private lateinit var face: NoxFaceView
     private lateinit var api: NoxApi
+    private lateinit var memory: NoxMemory
     private var recognizer: SpeechRecognizer? = null
     private var listening = false
     private var player: MediaPlayer? = null
@@ -33,6 +34,7 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.activity_main)
         face = findViewById(R.id.face)
         api = NoxApi(this)
+        memory = NoxMemory(this)
         registerReceiver(wakeReceiver, IntentFilter("com.muzan204.nox.WAKE"), RECEIVER_NOT_EXPORTED)
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) startService(Intent(this, WakeWordService::class.java))
 
@@ -76,6 +78,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun send(text: String) {
+        memory.save("user", text)
         face.state = "THINKING"
         Thread {
             val result = api.chat(text)
@@ -83,6 +86,7 @@ class MainActivity : ComponentActivity() {
                 runOnUiThread { face.state = "ERROR" }
                 return@Thread
             }
+            memory.save("assistant", result.text)
             runOnUiThread { face.state = "SPEAKING" }
             val audio = api.voice(result.text)
             if (audio != null) playAudio(audio)
