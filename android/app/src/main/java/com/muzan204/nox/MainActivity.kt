@@ -1,18 +1,25 @@
 package com.muzan204.nox
 
+import android.graphics.Color
 import android.os.Bundle
-import android.view.Window
 import androidx.activity.ComponentActivity
 
 class MainActivity : ComponentActivity() {
+    private lateinit var face: NoxFaceView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
-        setContentView(R.layout.activity_main)
+        face = NoxFaceView(this)
+        setContentView(face)
 
-        window.statusBarColor = android.graphics.Color.rgb(5, 7, 13)
-        window.navigationBarColor = android.graphics.Color.rgb(5, 7, 13)
+        window.statusBarColor = Color.rgb(5, 7, 13)
+        window.navigationBarColor = Color.rgb(5, 7, 13)
         window.decorView.systemUiVisibility = 0
+    }
+
+    fun onFaceTapped() {
+        // O toque será ligado ao microfone na próxima etapa.
+        // Por enquanto, a carinha permanece como a interface principal.
     }
 }
