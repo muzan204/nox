@@ -1,4 +1,4 @@
-# NOX 1.2
+# NOX 1.3
 
 Assistente pessoal local para Android/Termux, com carinha nativa, voz, memória local, comandos seguros e conexão opcional com computador.
 
@@ -29,6 +29,9 @@ O navegador deixa de ser a interface principal. A pasta `android/` contém o apl
 ### Evolução 1.2
 
 - personalidade determinística para identidade, criador, saudações e agradecimentos;
+- chat geral com respostas mais completas e naturais;
+- histórico curto de conversa para manter referências entre mensagens;
+- busca online automática para perguntas atuais, com timeout e contexto enviado ao Qwen;
 - estado facial `SURPRISED` adicionado ao Android;
 - endpoint `GET /api/capabilities` para descoberta das capacidades do Core;
 - status do Core com versão do Node, plataforma, arquitetura, uptime e quantidade de memórias;
@@ -166,6 +169,6 @@ A `ui/face.html` continua disponível como fallback/diagnóstico, mas não é ma
 
 ## Status
 
-**NOX 1.2 — Core + memória + ferramentas + personalidade + ponte Android**
+**NOX 1.3 — Core + memória + chat geral + contexto + busca online + ferramentas + ponte Android**
 
 A camada Android, conexão Core/PC, voz, palavra-chave e comandos seguros estão preparadas. A próxima etapa é finalizar o banco SQLite de memória e evoluir as ferramentas autorizadas.
