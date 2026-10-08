@@ -340,7 +340,10 @@ function listenText() {
 // COMMANDS
 // ============================================================
 
-const { executeCommand } = require("./commands");
+const {
+  executeCommand,
+  executeNaturalCommands
+} = require("./commands");
 
 // ============================================================
 // HTTP SERVER
@@ -549,13 +552,33 @@ const server = http.createServer(async (req, res) => {
       setFaceState(STATES.THINKING);
 
       try {
+        const commandResult = await executeNaturalCommands(
+          message,
+          { root: ROOT }
+        );
+
+        if (commandResult.matched) {
+          setFaceState(STATES.HAPPY);
+
+          json(res, 200, {
+            ok: true,
+            text: commandResult.text,
+            source: "command",
+            commands: commandResult.commands
+          });
+
+          setFaceState(STATES.IDLE);
+          return;
+        }
+
         const answer = await chatWithLlamaServer(message);
 
         setFaceState(STATES.IDLE);
 
         json(res, 200, {
           ok: true,
-          text: answer
+          text: answer,
+          source: "llama"
         });
       } catch (error) {
         setFaceState(STATES.ERROR);
@@ -657,7 +680,6 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-
     // --------------------------------------------------------
     // COMMANDS
     // --------------------------------------------------------
@@ -718,6 +740,7 @@ server.listen(PORT, HOST, () => {
   console.log(`Voice:   POST http://${HOST}:${PORT}/api/voice`);
   console.log(`Listen:  POST http://${HOST}:${PORT}/api/listen`);
   console.log("");
+
   console.log(
     `ElevenLabs: ${
       ELEVENLABS_API_KEY && ELEVENLABS_VOICE_ID
