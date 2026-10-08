@@ -128,7 +128,9 @@ function detectIdentity(input) {
   const lower = normalize(input);
   return [
     "qual o seu nome",
+    "qual e o seu nome",
     "qual seu nome",
+    "qual e seu nome",
     "quem e voce",
     "como voce se chama",
     "me diga seu nome",
@@ -140,7 +142,10 @@ function detectCreator(input) {
   const lower = normalize(input);
   return [
     "quem te criou",
+    "quem te criou mesmo",
     "quem criou voce",
+    "quem criou voce mesmo",
+    "quem foi que te criou",
     "quem criou o nox",
     "quem fez o nox",
     "quem desenvolveu o nox",
