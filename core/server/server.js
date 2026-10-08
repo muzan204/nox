@@ -224,6 +224,12 @@ async function searchWeb(query) {
       },
       signal: controller.signal
     });
+  } catch (error) {
+    throw new Error(
+      error.name === "AbortError"
+        ? "A busca online demorou demais."
+        : "Busca online indisponível no momento."
+    );
   } finally {
     clearTimeout(timeout);
   }
@@ -247,28 +253,23 @@ async function searchWeb(query) {
     .replace(/\\s+/g, " ")
     .trim();
 
-  const linkPattern = /<a\\b(?=[^>]*class="[^"]*\\bresult__a\\b[^"]*")([^>]*)>([\\s\\S]*?)<\\/a>/gi;
+  const pattern =
+    /<a[^>]*class="[^"]*result__a[^"]*"[^>]*>([\\s\\S]*?)<\\/a>/gi;
+
   let match;
 
-  while ((match = linkPattern.exec(html)) && results.length < 6) {
-    const attributes = match[1] || "";
-    const hrefMatch = attributes.match(/href="([^"]+)"/i);
-    if (!hrefMatch) continue;
+  while ((match = pattern.exec(html)) && results.length < 6) {
+    const title = clean(match[1]);
+    const rest = html.slice(pattern.lastIndex);
 
-    let url = hrefMatch[1];
-    const uddg = url.match(/[?&]uddg=([^&]+)/i);
-    if (uddg) {
-      try { url = decodeURIComponent(uddg[1]); } catch {}
-    }
+    const snippetMatch =
+      rest.match(/class="[^"]*result__snippet[^"]*"[^>]*>([\\s\\S]*?)<\\/[^>]+>/i);
 
-    if (!/^https?:\\/\\//i.test(url)) continue;
-
-    const title = clean(match[2]);
-    const afterTitle = html.slice(linkPattern.lastIndex);
-    const snippetMatch = afterTitle.match(/class="[^"]*\\bresult__snippet\\b[^"]*"[^>]*>([\\s\\S]*?)<\\/(?:a|div)>/i);
     const snippet = clean(snippetMatch ? snippetMatch[1] : "");
 
-    if (title) results.push({ title, snippet, url });
+    if (title) {
+      results.push({ title, snippet });
+    }
   }
 
   if (!results.length) {
@@ -277,8 +278,7 @@ async function searchWeb(query) {
 
   return results.map((item, index) =>
     (index + 1) + ". " + item.title +
-    (item.snippet ? "\\n" + item.snippet : "") +
-    "\\nFonte: " + item.url
+    (item.snippet ? "\\n" + item.snippet : "")
   ).join("\\n\\n");
 }
 
