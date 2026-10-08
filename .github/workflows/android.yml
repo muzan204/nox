@@ -37,24 +37,19 @@ jobs:
           gradle-version: "8.9"
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
-          cmdline-tools-version: "11076708"
+          cmdline-tools-version: "14742923"
+          packages: "platform-tools platforms;android-35 build-tools;35.0.0"
           accept-android-sdk-licenses: true
           log-accepted-android-sdk-licenses: false
-
-      - name: Install Android SDK packages
-        shell: bash
-        run: |
-          set -eux
-          sdkmanager --version
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Verify Android SDK
         shell: bash
         run: |
           set -eux
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          sdkmanager --list_installed
           test -f "$ANDROID_SDK_ROOT/platforms/android-35/android.jar"
           test -x "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt2"
           "$ANDROID_SDK_ROOT/build-tools/35.0.0/aapt2" version
