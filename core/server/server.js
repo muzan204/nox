@@ -253,8 +253,10 @@ async function searchWeb(query) {
     .replace(/\\s+/g, " ")
     .trim();
 
-  const pattern =
-    /<a[^>]*class="[^"]*result__a[^"]*"[^>]*>([\\s\\S]*?)<\\/a>/gi;
+  const pattern = new RegExp(
+    '<a[^>]*class="[^"]*result__a[^"]*"[^>]*>([\\s\\S]*?)</a>',
+    "gi"
+  );
 
   let match;
 
@@ -262,8 +264,12 @@ async function searchWeb(query) {
     const title = clean(match[1]);
     const rest = html.slice(pattern.lastIndex);
 
-    const snippetMatch =
-      rest.match(/class="[^"]*result__snippet[^"]*"[^>]*>([\\s\\S]*?)<\\/[^>]+>/i);
+    const snippetMatch = rest.match(
+      new RegExp(
+        'class="[^"]*result__snippet[^"]*"[^>]*>([\\s\\S]*?)</[^>]+>',
+        "i"
+      )
+    );
 
     const snippet = clean(snippetMatch ? snippetMatch[1] : "");
 
