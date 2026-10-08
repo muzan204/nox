@@ -12,757 +12,160 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
 body{
-  --c:#22d3ee;
-  transition:--c .6s ease;
-  height:100dvh;overflow:hidden;position:relative;
-  display:flex;flex-direction:column;
-  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  --c:#22d3ee;transition:--c .6s ease;height:100dvh;overflow:hidden;position:relative;
+  display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
   background:radial-gradient(120% 80% at 50% 0%,#0d1630 0%,#070a14 55%,#04060c 100%);
-  color:#dff6ff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-}
-
-/* cor de cada estado */
-body[data-s=LISTENING]{--c:#60a5fa}
-body[data-s=THINKING]{--c:#fbbf24}
-body[data-s=SPEAKING]{--c:#34d399}
-body[data-s=HAPPY]{--c:#f9a8d4}
-body[data-s=CONFUSED]{--c:#c084fc}
-body[data-s=ERROR]{--c:#fb7185}
-body[data-s=SLEEPING]{--c:#64748b}
-
-/* brilho de fundo */
+  color:#dff6ff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body[data-s=LISTENING]{--c:#60a5fa}body[data-s=THINKING]{--c:#fbbf24}body[data-s=SPEAKING]{--c:#34d399}
+body[data-s=HAPPY]{--c:#f9a8d4}body[data-s=CONFUSED]{--c:#c084fc}body[data-s=ERROR]{--c:#fb7185}body[data-s=SLEEPING]{--c:#64748b}
 #aura{position:absolute;inset:0;pointer-events:none;z-index:0}
-#aura::before{content:"";position:absolute;inset:0;
-  background:radial-gradient(55% 32% at 50% 36%,var(--c),transparent 70%);
-  opacity:.14;animation:glow 5s ease-in-out infinite}
+#aura::before{content:"";position:absolute;inset:0;background:radial-gradient(55% 32% at 50% 36%,var(--c),transparent 70%);opacity:.14;animation:glow 5s ease-in-out infinite}
 @keyframes glow{50%{opacity:.26}}
-
-/* topo */
 header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;position:relative;z-index:2}
 .logo{letter-spacing:.38em;font-weight:700;font-size:15px;color:var(--c);opacity:.9}
-#chip{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 12px;border-radius:99px;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09)}
-#dot{width:8px;height:8px;border-radius:50%;background:#64748b}
-#dot.on{background:#34d399;box-shadow:0 0 8px #34d399}
-#dot.off{background:#fb7185}
-
-/* centro */
-main{flex:1;min-height:0;position:relative;z-index:1;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2.4dvh;padding:0 20px}
-
-#face{position:relative;display:flex;flex-direction:column;align-items:center;
-  cursor:pointer;user-select:none;animation:float 6s ease-in-out infinite}
-@keyframes float{50%{transform:translateY(-7px)}}
-#gaze{transition:transform .7s cubic-bezier(.2,.8,.2,1);transform:translate(var(--gx,0px),var(--gy,0px))}
-#eyes{display:flex;align-items:center;gap:calc(var(--s)*.62)}
-
-.ew{position:relative;display:flex;align-items:center;justify-content:center;height:calc(var(--s)*1.6)}
-.eye{
-  position:relative;overflow:hidden;
-  width:calc(var(--s)*var(--k,1));height:calc(var(--s)*1.25*var(--k,1));
-  border-radius:40%;background:var(--c);
-  box-shadow:0 0 calc(var(--s)*.4) var(--c);
-  transition:width .35s,height .35s,border-radius .35s,transform .12s ease-in}
-.eye::before{content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(255,255,255,.28),transparent 45%,rgba(0,0,0,.3))}
-.eye::after{content:"";position:absolute;left:17%;top:13%;width:27%;height:21%;border-radius:50%;
-  background:rgba(255,255,255,.8);transform:rotate(-25deg);transition:opacity .3s}
+#chip{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09)}
+#dot{width:8px;height:8px;border-radius:50%;background:#64748b}#dot.on{background:#34d399;box-shadow:0 0 8px #34d399}#dot.off{background:#fb7185}
+main{flex:1;min-height:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.4dvh;padding:0 20px}
+#face{position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;user-select:none;animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-7px)}}#gaze{transition:transform .7s cubic-bezier(.2,.8,.2,1);transform:translate(var(--gx,0px),var(--gy,0px))}
+#eyes{display:flex;align-items:center;gap:calc(var(--s)*.62)}.ew{position:relative;display:flex;align-items:center;justify-content:center;height:calc(var(--s)*1.6)}
+.eye{position:relative;overflow:hidden;width:calc(var(--s)*var(--k,1));height:calc(var(--s)*1.25*var(--k,1));border-radius:40%;background:var(--c);box-shadow:0 0 calc(var(--s)*.4) var(--c);transition:width .35s,height .35s,border-radius .35s,transform .12s ease-in}
+.eye::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.28),transparent 45%,rgba(0,0,0,.3))}
+.eye::after{content:"";position:absolute;left:17%;top:13%;width:27%;height:21%;border-radius:50%;background:rgba(255,255,255,.8);transform:rotate(-25deg);transition:opacity .3s}
 body.blink .eye{transform:scaleY(.08)}
-
-.brow{position:absolute;top:calc(var(--s)*.03);left:50%;
-  width:calc(var(--s)*.8);height:7px;margin-left:calc(var(--s)*-.4);border-radius:7px;
-  background:var(--c);opacity:0;transition:opacity .3s,transform .35s}
-.cheek{position:absolute;left:50%;bottom:calc(var(--s)*.03);
-  width:calc(var(--s)*.7);height:calc(var(--s)*.3);margin-left:calc(var(--s)*-.35);border-radius:50%;
-  background:radial-gradient(closest-side,rgba(251,113,133,.75),transparent);
-  opacity:0;transition:opacity .4s}
-
-#mouth{--b:7px;
-  margin-top:calc(var(--s)*.12);
-  width:calc(var(--s)*.7);height:calc(var(--s)*.3);
-  border:var(--b) solid var(--c);border-top:0;border-radius:0 0 999px 999px;
-  transform-origin:50% 0;
-  transition:width .3s,height .3s,border-radius .3s}
-
-#fx{position:absolute;top:-6px;right:-4%;font-size:calc(var(--s)*.34);font-weight:700;
-  color:var(--c);opacity:0;pointer-events:none}
-#fx.on{animation:rise 2.6s ease-out infinite}
-@keyframes rise{0%{opacity:0;transform:translateY(10px)}30%{opacity:.95}100%{opacity:0;transform:translateY(-28px)}}
-
-/* expressões */
-body[data-s=LISTENING] .eye{--k:1.1}
-body[data-s=LISTENING] .brow{opacity:.9;transform:translateY(-6px)}
-body[data-s=LISTENING] #mouth{width:calc(var(--s)*.4);height:calc(var(--s)*.2)}
-
-body[data-s=THINKING] #eyes{animation:look 2.6s ease-in-out infinite}
-@keyframes look{0%,100%{transform:translateX(-10px)}50%{transform:translateX(10px)}}
-body[data-s=THINKING] .l .brow{opacity:.9;transform:translateY(-9px) rotate(-6deg)}
-body[data-s=THINKING] .r .brow{opacity:.9;transform:rotate(4deg)}
+.brow{position:absolute;top:calc(var(--s)*.03);left:50%;width:calc(var(--s)*.8);height:7px;margin-left:calc(var(--s)*-.4);border-radius:7px;background:var(--c);opacity:0;transition:opacity .3s,transform .35s}
+.cheek{position:absolute;left:50%;bottom:calc(var(--s)*.03);width:calc(var(--s)*.7);height:calc(var(--s)*.3);margin-left:calc(var(--s)*-.35);border-radius:50%;background:radial-gradient(closest-side,rgba(251,113,133,.75),transparent);opacity:0;transition:opacity .4s}
+#mouth{--b:7px;margin-top:calc(var(--s)*.12);width:calc(var(--s)*.7);height:calc(var(--s)*.3);border:var(--b) solid var(--c);border-top:0;border-radius:0 0 999px 999px;transform-origin:50% 0;transition:width .3s,height .3s,border-radius .3s}
+#fx{position:absolute;top:-6px;right:-4%;font-size:calc(var(--s)*.34);font-weight:700;color:var(--c);opacity:0;pointer-events:none}
+#fx.on{animation:rise 2.6s ease-out infinite}@keyframes rise{0%{opacity:0;transform:translateY(10px)}30%{opacity:.95}100%{opacity:0;transform:translateY(-28px)}}
+body[data-s=LISTENING] .eye{--k:1.1}body[data-s=LISTENING] .brow{opacity:.9;transform:translateY(-6px)}body[data-s=LISTENING] #mouth{width:calc(var(--s)*.4);height:calc(var(--s)*.2)}
+body[data-s=THINKING] #eyes{animation:look 2.6s ease-in-out infinite}@keyframes look{0%,100%{transform:translateX(-10px)}50%{transform:translateX(10px)}}
+body[data-s=THINKING] .l .brow{opacity:.9;transform:translateY(-9px) rotate(-6deg)}body[data-s=THINKING] .r .brow{opacity:.9;transform:rotate(4deg)}
 body[data-s=THINKING] #mouth{width:calc(var(--s)*.34);height:0;border:0;border-bottom:var(--b) solid var(--c);border-radius:var(--b)}
-
-body[data-s=SPEAKING] #eyes{animation:bob .45s ease-in-out infinite alternate}
-@keyframes bob{to{transform:translateY(-4px)}}
-body[data-s=SPEAKING] #mouth{width:calc(var(--s)*.5);height:calc(var(--s)*.34);border:0;background:var(--c);
-  border-radius:50%;animation:talk .34s ease-in-out infinite alternate}
-@keyframes talk{from{transform:scaleY(.2)}to{transform:scaleY(1)}}
-
-body[data-s=HAPPY] .eye{height:calc(var(--s)*.55);border-radius:999px 999px 0 0}
-body[data-s=HAPPY] .eye::after{opacity:0}
-body[data-s=HAPPY] .cheek{opacity:1}
+body[data-s=SPEAKING] #eyes{animation:bob .45s ease-in-out infinite alternate}@keyframes bob{to{transform:translateY(-4px)}}
+body[data-s=SPEAKING] #mouth{width:calc(var(--s)*.5);height:calc(var(--s)*.34);border:0;background:var(--c);border-radius:50%;animation:talk .34s ease-in-out infinite alternate}@keyframes talk{from{transform:scaleY(.2)}to{transform:scaleY(1)}}
+body[data-s=HAPPY] .eye{height:calc(var(--s)*.55);border-radius:999px 999px 0 0}body[data-s=HAPPY] .eye::after{opacity:0}body[data-s=HAPPY] .cheek{opacity:1}
 body[data-s=HAPPY] #mouth{width:calc(var(--s)*.8);height:calc(var(--s)*.4);border:0;background:var(--c);border-radius:0 0 999px 999px}
-
-body[data-s=CONFUSED] .l .eye{--k:1.15}
-body[data-s=CONFUSED] .r .eye{--k:.8}
-body[data-s=CONFUSED] .l .brow{opacity:.9;transform:translateY(-12px) rotate(-8deg)}
-body[data-s=CONFUSED] .r .brow{opacity:.9;transform:translateY(2px) rotate(6deg)}
-body[data-s=CONFUSED] #mouth{width:calc(var(--s)*.42);height:0;border:0;border-bottom:var(--b) solid var(--c);
-  border-radius:var(--b);transform:rotate(-9deg)}
-
-body[data-s=ERROR] .eye{--k:.85}
-body[data-s=ERROR] .l .brow{opacity:.9;transform:rotate(-14deg)}
-body[data-s=ERROR] .r .brow{opacity:.9;transform:rotate(14deg)}
-body[data-s=ERROR] #mouth{width:calc(var(--s)*.5);height:calc(var(--s)*.2);border:var(--b) solid var(--c);
-  border-bottom:0;border-radius:999px 999px 0 0}
-
-body[data-s=SLEEPING] .eye{height:10px;border-radius:10px}
-body[data-s=SLEEPING] .eye::after{opacity:0}
-body[data-s=SLEEPING] #mouth{width:calc(var(--s)*.14);height:calc(var(--s)*.14);border:0;background:var(--c);
-  border-radius:50%;opacity:.7;animation:breathe 3.2s ease-in-out infinite}
-@keyframes breathe{50%{transform:scale(1.5)}}
-
-/* balão de texto */
-#bubble{width:100%;max-width:440px;padding:12px 16px;border-radius:20px;text-align:center;
-  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
-#me{margin:0 0 6px;font-size:13px;color:#7c8aa5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#me:empty{display:none}
-#bot{margin:0;font-size:clamp(17px,4.6vw,21px);line-height:1.45;max-height:24dvh;overflow:auto;
-  text-wrap:balance;transition:opacity .25s}
-#bot.fade{opacity:0}
-#bot.err{color:#fda4af}
-.dots{display:inline-flex;gap:6px;align-items:center;height:1.4em}
-.dots i{width:8px;height:8px;border-radius:50%;background:var(--c);animation:dot 1s infinite ease-in-out}
-.dots i:nth-child(2){animation-delay:.15s}
-.dots i:nth-child(3){animation-delay:.3s}
-@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
-#wait{display:block;font-size:12px;color:#7c8aa5;margin-top:2px}
-
-/* barra de baixo */
+body[data-s=CONFUSED] .l .eye{--k:1.15}body[data-s=CONFUSED] .r .eye{--k:.8}body[data-s=CONFUSED] .l .brow{opacity:.9;transform:translateY(-12px) rotate(-8deg)}body[data-s=CONFUSED] .r .brow{opacity:.9;transform:translateY(2px) rotate(6deg)}
+body[data-s=CONFUSED] #mouth{width:calc(var(--s)*.42);height:0;border:0;border-bottom:var(--b) solid var(--c);border-radius:var(--b);transform:rotate(-9deg)}
+body[data-s=ERROR] .eye{--k:.85}body[data-s=ERROR] .l .brow{opacity:.9;transform:rotate(-14deg)}body[data-s=ERROR] .r .brow{opacity:.9;transform:rotate(14deg)}
+body[data-s=ERROR] #mouth{width:calc(var(--s)*.5);height:calc(var(--s)*.2);border:var(--b) solid var(--c);border-bottom:0;border-radius:999px 999px 0 0}
+body[data-s=SLEEPING] .eye{height:10px;border-radius:10px}body[data-s=SLEEPING] .eye::after{opacity:0}
+body[data-s=SLEEPING] #mouth{width:calc(var(--s)*.14);height:calc(var(--s)*.14);border:0;background:var(--c);border-radius:50%;opacity:.7;animation:breathe 3.2s ease-in-out infinite}@keyframes breathe{50%{transform:scale(1.5)}}
+#bubble{width:100%;max-width:440px;padding:12px 16px;border-radius:20px;text-align:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+#me{margin:0 0 6px;font-size:13px;color:#7c8aa5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#me:empty{display:none}
+#bot{margin:0;font-size:clamp(17px,4.6vw,21px);line-height:1.45;max-height:24dvh;overflow:auto;text-wrap:balance;transition:opacity .25s}#bot.fade{opacity:0}#bot.err{color:#fda4af}
+.dots{display:inline-flex;gap:6px;align-items:center;height:1.4em}.dots i{width:8px;height:8px;border-radius:50%;background:var(--c);animation:dot 1s infinite ease-in-out}.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}#wait{display:block;font-size:12px;color:#7c8aa5;margin-top:2px}
 footer{display:flex;align-items:center;gap:10px;padding:10px 14px 16px;position:relative;z-index:2}
-#bar{flex:1;display:flex;align-items:center;gap:6px;padding:0 6px 0 18px;border-radius:28px;
-  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.11)}
-#i{flex:1;min-width:0;background:none;border:0;outline:0;color:#fff;font-size:16px;padding:15px 0}
-#i::placeholder{color:#6b7a96}
-button{border:0;cursor:pointer;color:#04121a;background:var(--c);display:grid;place-items:center;
-  transition:transform .12s,background .6s}
-button:active{transform:scale(.92)}
+#bar{flex:1;display:flex;align-items:center;gap:6px;padding:0 6px 0 18px;border-radius:28px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.11)}
+#i{flex:1;min-width:0;background:none;border:0;outline:0;color:#fff;font-size:16px;padding:15px 0}#i::placeholder{color:#6b7a96}
+button{border:0;cursor:pointer;color:#04121a;background:var(--c);display:grid;place-items:center;transition:transform .12s,background .6s}button:active{transform:scale(.92)}
 button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-#send{width:40px;height:40px;border-radius:50%}
-#mic{position:relative;width:56px;height:56px;border-radius:50%}
-#mic::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--c);opacity:0}
-body[data-s=LISTENING] #mic::after{animation:ring 1.2s ease-out infinite}
-@keyframes ring{from{opacity:.8;transform:scale(1)}to{opacity:0;transform:scale(1.7)}}
+#send{width:40px;height:40px;border-radius:50%}#mic{position:relative;width:56px;height:56px;border-radius:50%}#mic::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--c);opacity:0}
+body[data-s=LISTENING] #mic::after{animation:ring 1.2s ease-out infinite}@keyframes ring{from{opacity:.8;transform:scale(1)}to{opacity:0;transform:scale(1.7)}}
 </style>
 </head>
 <body data-s="IDLE">
 <div id="aura"></div>
-
-<header>
-  <b class="logo">NOX</b>
-  <span id="chip"><i id="dot"></i><span id="st">Pronto</span></span>
-</header>
-
+<header><b class="logo">NOX</b><span id="chip"><i id="dot"></i><span id="st">Pronto</span></span></header>
 <main>
-  <div id="face" title="Toque no NOX">
-    <div id="gaze">
-      <div id="eyes">
-        <div class="ew l"><i class="brow"></i><div class="eye"></div><i class="cheek"></i></div>
-        <div class="ew r"><i class="brow"></i><div class="eye"></div><i class="cheek"></i></div>
-      </div>
-    </div>
-    <div id="mouth"></div>
-    <div id="fx"></div>
-  </div>
-
-  <div id="bubble">
-    <p id="me"></p>
-    <p id="bot">Olá, senhor Gustavo. Como posso ajudar?</p>
-  </div>
+<div id="face" title="Toque no NOX"><div id="gaze"><div id="eyes"><div class="ew l"><i class="brow"></i><div class="eye"></div><i class="cheek"></i></div><div class="ew r"><i class="brow"></i><div class="eye"></div><i class="cheek"></i></div></div></div><div id="mouth"></div><div id="fx"></div></div>
+<div id="bubble"><p id="me"></p><p id="bot">Olá, senhor Gustavo. Como posso ajudar?</p></div>
 </main>
-
-<footer>
-  <div id="bar">
-    <input id="i" placeholder="Fale com o NOX" autocomplete="off" autocapitalize="sentences" enterkeyhint="send">
-    <button id="send" aria-label="Enviar"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
-  </div>
-  <button id="mic" aria-label="Falar"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
-</footer>
-
+<footer><div id="bar"><input id="i" placeholder="Fale com o NOX" autocomplete="off" autocapitalize="sentences" enterkeyhint="send"><button id="send" aria-label="Enviar"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div><button id="mic" aria-label="Falar"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button></footer>
 <script>
-const $ = id => document.getElementById(id);
+const $=id=>document.getElementById(id),body=document.body,bot=$('bot'),me=$('me'),inp=$('i'),fx=$('fx'),st=$('st'),dot=$('dot'),gaze=$('gaze');
+const LABEL={IDLE:'Pronto',LISTENING:'Ouvindo…',THINKING:'Pensando…',SPEAKING:'Falando…',HAPPY:'Feliz',CONFUSED:'Confuso',SLEEPING:'Dormindo',ERROR:'Erro'};
+const FX={SLEEPING:'z z Z',CONFUSED:'?',HAPPY:'♥'};
+let serverState='IDLE',busy=false,timer=null,currentAudio=null,currentSpeech=null;
 
-const body = document.body;
-const bot = $('bot');
-const me = $('me');
-const inp = $('i');
-const fx = $('fx');
-const st = $('st');
-const dot = $('dot');
-const gaze = $('gaze');
+function paint(s){body.dataset.s=s;st.textContent=LABEL[s]||s;const t=FX[s];fx.textContent=t||'';fx.classList.toggle('on',!!t)}
+function setFace(s){fetch('/api/face-state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:s})}).catch(()=>{});paint(s)}
+const es=new EventSource('/api/events');es.onopen=()=>dot.className='on';es.onerror=()=>dot.className='off';
+es.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.state){serverState=d.state;if(!currentAudio&&!currentSpeech)paint(d.state)}}catch{}};
 
-const LABEL = {
-  IDLE: 'Pronto',
-  LISTENING: 'Ouvindo…',
-  THINKING: 'Pensando…',
-  SPEAKING: 'Falando…',
-  HAPPY: 'Feliz',
-  CONFUSED: 'Confuso',
-  SLEEPING: 'Dormindo',
-  ERROR: 'Erro'
-};
+function blink(){body.classList.add('blink');setTimeout(()=>body.classList.remove('blink'),140);setTimeout(blink,2200+Math.random()*4200)}setTimeout(blink,2500);
+function look(){const calm=body.dataset.s==='IDLE'||body.dataset.s==='LISTENING';gaze.style.setProperty('--gx',(calm?(Math.random()*2-1)*14:0)+'px');gaze.style.setProperty('--gy',(calm?(Math.random()*2-1)*8:0)+'px');setTimeout(look,1800+Math.random()*3200)}look();
 
-const FX = {
-  SLEEPING: 'z z Z',
-  CONFUSED: '?',
-  HAPPY: '♥'
-};
+$('face').onclick=()=>{if(serverState!=='IDLE'||busy)return;paint('HAPPY');setTimeout(()=>{if(!currentAudio&&!currentSpeech&&!busy)paint(serverState)},1700)};
+function showText(t,isErr){bot.classList.add('fade');setTimeout(()=>{bot.textContent=t;bot.classList.toggle('err',!!isErr);bot.classList.remove('fade');bot.scrollTop=0},180)}
 
-let serverState = 'IDLE';
-let busy = false;
-let timer = null;
-let currentAudio = null;
-
-/* ================================
-   ESTADO VISUAL
-================================ */
-
-function paint(s) {
-  body.dataset.s = s;
-  st.textContent = LABEL[s] || s;
-
-  const t = FX[s];
-
-  fx.textContent = t || '';
-  fx.classList.toggle('on', !!t);
+function localSpeak(text){
+  return new Promise((resolve,reject)=>{
+    if(!('speechSynthesis' in window)) return reject(new Error('Seu navegador não oferece voz local.'));
+    try{speechSynthesis.cancel()}catch{}
+    const u=new SpeechSynthesisUtterance(String(text));
+    u.lang='pt-BR';u.rate=.98;u.pitch=1;u.volume=1;
+    const voices=speechSynthesis.getVoices();
+    const pt=voices.find(v=>/^pt-BR$/i.test(v.lang))||voices.find(v=>/^pt/i.test(v.lang));
+    if(pt)u.voice=pt;
+    currentSpeech=u;setFace('SPEAKING');
+    u.onend=()=>{if(currentSpeech===u)currentSpeech=null;setFace('IDLE');resolve()};
+    u.onerror=()=>{if(currentSpeech===u)currentSpeech=null;setFace('IDLE');reject(new Error('A voz local falhou.'))};
+    speechSynthesis.speak(u);
+  });
 }
 
-function setFace(s) {
-  fetch('/api/face-state', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      state: s
-    })
-  }).catch(() => {});
-
-  paint(s);
-}
-
-/* ================================
-   EVENTOS DO NOX CORE
-================================ */
-
-const es = new EventSource('/api/events');
-
-es.onopen = () => {
-  dot.className = 'on';
-};
-
-es.onerror = () => {
-  dot.className = 'off';
-};
-
-es.onmessage = e => {
-  try {
-    const d = JSON.parse(e.data);
-
-    if (d.state) {
-      serverState = d.state;
-
-      /*
-       * Não deixar o servidor interromper
-       * a animação SPEAKING enquanto o áudio
-       * está tocando no navegador.
-       */
-      if (!currentAudio) {
-        paint(d.state);
-      }
-    }
-  } catch {}
-};
-
-/* ================================
-   PISCAR
-================================ */
-
-function blink() {
-  body.classList.add('blink');
-
-  setTimeout(() => {
-    body.classList.remove('blink');
-  }, 140);
-
-  setTimeout(
-    blink,
-    2200 + Math.random() * 4200
-  );
-}
-
-setTimeout(blink, 2500);
-
-/* ================================
-   OLHAR
-================================ */
-
-function look() {
-  const s = body.dataset.s;
-  const calm = s === 'IDLE' || s === 'LISTENING';
-
-  gaze.style.setProperty(
-    '--gx',
-    (calm ? (Math.random() * 2 - 1) * 14 : 0) + 'px'
-  );
-
-  gaze.style.setProperty(
-    '--gy',
-    (calm ? (Math.random() * 2 - 1) * 8 : 0) + 'px'
-  );
-
-  setTimeout(
-    look,
-    1800 + Math.random() * 3200
-  );
-}
-
-look();
-
-/* ================================
-   TOQUE NO ROSTO
-================================ */
-
-$('face').onclick = () => {
-  if (serverState !== 'IDLE' || busy) {
-    return;
-  }
-
-  paint('HAPPY');
-
-  setTimeout(() => {
-    if (!currentAudio && !busy) {
-      paint(serverState);
-    }
-  }, 1700);
-};
-
-/* ================================
-   TEXTO NA TELA
-================================ */
-
-function showText(t, isErr) {
-  bot.classList.add('fade');
-
-  setTimeout(() => {
-    bot.textContent = t;
-    bot.classList.toggle('err', !!isErr);
-    bot.classList.remove('fade');
-    bot.scrollTop = 0;
-  }, 180);
-}
-
-/* ================================
-   VOZ ELEVENLABS
-================================ */
-
-async function speak(text) {
-  text = String(text || '').trim();
-
-  if (!text) {
-    return;
-  }
-
-  /*
-   * Para o áudio anterior se existir.
-   */
-  if (currentAudio) {
-    try {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    } catch {}
-
-    currentAudio = null;
-  }
-
+async function speak(text){
+  text=String(text||'').trim();if(!text)return;
+  if(currentAudio){try{currentAudio.pause();currentAudio.currentTime=0}catch{}currentAudio=null}
+  if(currentSpeech){try{speechSynthesis.cancel()}catch{}currentSpeech=null}
   setFace('SPEAKING');
-
-  const response = await fetch('/api/voice', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      text
-    })
-  });
-
-  if (!response.ok) {
-    let message = 'Erro ao gerar a voz.';
-
-    try {
-      const data = await response.json();
-      message = data.error || message;
-    } catch {}
-
-    throw new Error(message);
-  }
-
-  const blob = await response.blob();
-
-  if (!blob.size) {
-    throw new Error('A ElevenLabs não retornou áudio.');
-  }
-
-  const audioUrl = URL.createObjectURL(blob);
-  const audio = new Audio(audioUrl);
-
-  currentAudio = audio;
-
-  audio.preload = 'auto';
-  audio.volume = 1.0;
-
-  audio.onended = () => {
-    URL.revokeObjectURL(audioUrl);
-
-    if (currentAudio === audio) {
-      currentAudio = null;
+  try{
+    const response=await fetch('/api/voice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+    if(!response.ok){
+      let message='Erro ao gerar a voz.';try{const data=await response.json();message=data.error||message}catch{}
+      if(/ELEVENLABS_API_KEY|ElevenLabs/i.test(message))return await localSpeak(text);
+      throw new Error(message);
     }
-
-    setFace('IDLE');
-  };
-
-  audio.onerror = () => {
-    URL.revokeObjectURL(audioUrl);
-
-    if (currentAudio === audio) {
-      currentAudio = null;
-    }
-
-    setFace('ERROR');
-
-    setTimeout(() => {
-      if (!currentAudio) {
-        setFace('IDLE');
-      }
-    }, 1500);
-  };
-
-  try {
-    await audio.play();
-  } catch (error) {
-    URL.revokeObjectURL(audioUrl);
-
-    if (currentAudio === audio) {
-      currentAudio = null;
-    }
-
-    throw new Error(
-      'O navegador bloqueou a reprodução automática da voz.'
-    );
-  }
-
-  /*
-   * Aguarda o áudio terminar.
-   */
-  await new Promise(resolve => {
-    audio.addEventListener(
-      'ended',
-      resolve,
-      { once: true }
-    );
-
-    audio.addEventListener(
-      'error',
-      resolve,
-      { once: true }
-    );
-  });
-}
-
-/* ================================
-   CONVERSA
-================================ */
-
-async function send(txt, speakAnswer = true) {
-  txt = (txt || '').trim();
-
-  if (!txt || busy) {
-    return;
-  }
-
-  busy = true;
-
-  me.textContent = 'Você: ' + txt;
-  inp.value = '';
-
-  bot.classList.remove('err');
-
-  bot.innerHTML =
-    '<span class="dots"><i></i><i></i><i></i></span>' +
-    '<small id="wait"></small>';
-
-  const t0 = Date.now();
-
-  clearInterval(timer);
-
-  timer = setInterval(() => {
-    const w = $('wait');
-
-    if (w) {
-      w.textContent =
-        'pensando há ' +
-        Math.round((Date.now() - t0) / 1000) +
-        ' s';
-    }
-  }, 1000);
-
-  try {
-    setFace('THINKING');
-
-    const r = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: txt
-      })
-    });
-
-    const d = await r.json();
-
-    clearInterval(timer);
-
-    if (!d.ok) {
-      throw new Error(
-        d.error || 'Erro ao conversar com o NOX.'
-      );
-    }
-
-    const answer = d.text || '...';
-
-    showText(answer, false);
-
-    /*
-     * Agora transforma a resposta do Qwen
-     * em voz usando a ElevenLabs.
-     */
-    if (speakAnswer) {
-      await speak(answer);
-    } else {
-      setFace('IDLE');
-    }
-
-  } catch (e) {
-    clearInterval(timer);
-
-    setFace('ERROR');
-
-    showText(
-      'Não consegui falar com o NOX (' +
-      e.message +
-      ').',
-      true
-    );
-
-    setTimeout(() => {
-      if (!currentAudio) {
-        setFace('IDLE');
-      }
-    }, 1800);
-
-  } finally {
-    busy = false;
+    const blob=await response.blob();
+    if(!blob.size)throw new Error('A ElevenLabs não retornou áudio.');
+    const audioUrl=URL.createObjectURL(blob),audio=new Audio(audioUrl);currentAudio=audio;audio.preload='auto';audio.volume=1;
+    audio.onended=()=>{URL.revokeObjectURL(audioUrl);if(currentAudio===audio)currentAudio=null;setFace('IDLE')};
+    audio.onerror=()=>{URL.revokeObjectURL(audioUrl);if(currentAudio===audio)currentAudio=null;setFace('ERROR');setTimeout(()=>{if(!currentAudio&&!currentSpeech)setFace('IDLE')},1500)};
+    try{await audio.play()}catch{URL.revokeObjectURL(audioUrl);if(currentAudio===audio)currentAudio=null;return await localSpeak(text)}
+    await new Promise(resolve=>{audio.addEventListener('ended',resolve,{once:true});audio.addEventListener('error',resolve,{once:true})});
+  }catch(e){
+    if(/ELEVENLABS_API_KEY|ElevenLabs|Failed to fetch|NetworkError/i.test(String(e.message||e)))return await localSpeak(text);
+    throw e;
   }
 }
 
-/* ================================
-   BOTÃO ENVIAR
-================================ */
+async function send(txt,speakAnswer=true){
+  txt=(txt||'').trim();if(!txt||busy)return;busy=true;me.textContent='Você: '+txt;inp.value='';bot.classList.remove('err');
+  bot.innerHTML='<span class="dots"><i></i><i></i><i></i></span><small id="wait"></small>';const t0=Date.now();clearInterval(timer);
+  timer=setInterval(()=>{const w=$('wait');if(w)w.textContent='pensando há '+Math.round((Date.now()-t0)/1000)+' s'},1000);
+  try{
+    setFace('THINKING');const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:txt})});const d=await r.json();clearInterval(timer);
+    if(!d.ok)throw new Error(d.error||'Erro ao conversar com o NOX.');const answer=d.text||'...';showText(answer,false);
+    if(speakAnswer)await speak(answer);else setFace('IDLE');
+  }catch(e){clearInterval(timer);setFace('ERROR');showText('Não consegui falar com o NOX ('+e.message+').',true);setTimeout(()=>{if(!currentAudio&&!currentSpeech)setFace('IDLE')},1800)}
+  finally{busy=false}
+}
+$('send').onclick=()=>send(inp.value,true);
+inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send(inp.value,true)}});
 
-$('send').onclick = () => {
-  send(inp.value, true);
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+$('mic').onclick=()=>{
+  if(busy)return;
+  if(!SR){showText('O navegador não oferece reconhecimento de voz. Use o Chrome.',true);return}
+  const r=new SR();r.lang='pt-BR';r.interimResults=false;r.maxAlternatives=1;r.continuous=false;let got=false;setFace('LISTENING');showText('Estou ouvindo...',false);
+  r.onresult=async e=>{
+    got=true;const text=e.results[0][0].transcript.trim();
+    if(!text){setFace('IDLE');showText('Não consegui entender.',true);return}
+    busy=true;
+    try{
+      setFace('THINKING');showText('Você: '+text,false);
+      const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})});const data=await response.json();
+      if(!data.ok)throw new Error(data.error||'Erro ao conversar com o NOX.');const answer=data.text||'...';showText(answer,false);await speak(answer);
+    }catch(err){setFace('ERROR');showText(err.message||'Erro ao conversar com o NOX.',true);setTimeout(()=>{if(!currentAudio&&!currentSpeech)setFace('IDLE')},1800)}
+    finally{busy=false}
+  };
+  r.onerror=e=>{busy=false;setFace('ERROR');showText('Não consegui ouvir ('+e.error+'). Tente novamente.',true);setTimeout(()=>{if(!currentAudio&&!currentSpeech)setFace('IDLE')},1800)};
+  r.onend=()=>{if(!got&&!busy)setFace('IDLE')};
+  try{r.start()}catch{busy=false;setFace('IDLE')}
 };
-
-inp.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    send(inp.value, true);
-  }
-});
-
-/* ================================
-   MICROFONE
-================================ */
-
-const SR =
-  window.SpeechRecognition ||
-  window.webkitSpeechRecognition;
-
-$('mic').onclick = () => {
-  if (busy) {
-    return;
-  }
-
-  if (!SR) {
-    showText(
-      'O navegador não oferece reconhecimento de voz. Use o Chrome.',
-      true
-    );
-    return;
-  }
-
-  const r = new SR();
-
-  r.lang = 'pt-BR';
-  r.interimResults = false;
-  r.maxAlternatives = 1;
-  r.continuous = false;
-
-  let got = false;
-
-  setFace('LISTENING');
-
-  showText(
-    'Estou ouvindo...',
-    false
-  );
-
-  r.onresult = async e => {
-    got = true;
-
-    const text =
-      e.results[0][0].transcript.trim();
-
-    if (!text) {
-      setFace('IDLE');
-
-      showText(
-        'Não consegui entender.',
-        true
-      );
-
-      return;
-    }
-
-    /*
-     * O microfone já capturou a fala.
-     * Agora enviamos para o Qwen.
-     */
-    busy = true;
-
-    try {
-      setFace('THINKING');
-
-      showText(
-        'Você: ' + text,
-        false
-      );
-
-      const response = await fetch(
-        '/api/chat',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            message: text
-          })
-        }
-      );
-
-      const data =
-        await response.json();
-
-      if (!data.ok) {
-        throw new Error(
-          data.error ||
-          'Erro ao conversar com o NOX.'
-        );
-      }
-
-      const answer =
-        data.text || '...';
-
-      showText(
-        answer,
-        false
-      );
-
-      /*
-       * Qwen respondeu.
-       * Agora o NOX fala usando Vinicius.
-       */
-      await speak(answer);
-
-    } catch (err) {
-      setFace('ERROR');
-
-      showText(
-        err.message ||
-        'Erro ao conversar com o NOX.',
-        true
-      );
-
-      setTimeout(() => {
-        if (!currentAudio) {
-          setFace('IDLE');
-        }
-      }, 1800);
-
-    } finally {
-      busy = false;
-    }
-  };
-
-  r.onerror = e => {
-    busy = false;
-
-    setFace('ERROR');
-
-    showText(
-      'Não consegui ouvir (' +
-      e.error +
-      '). Tente novamente.',
-      true
-    );
-
-    setTimeout(() => {
-      if (!currentAudio) {
-        setFace('IDLE');
-      }
-    }, 1800);
-  };
-
-  r.onend = () => {
-    if (!got && !busy) {
-      setFace('IDLE');
-    }
-  };
-
-  try {
-    r.start();
-  } catch (e) {
-    busy = false;
-    setFace('IDLE');
-  }
-};
-
-/* ================================
-   INICIALIZAÇÃO
-================================ */
-
 paint('IDLE');
 </script>
 </body>
