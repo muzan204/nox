@@ -23,6 +23,7 @@ class NoxFaceView(context: Context) : View(context) {
         "THINKING" -> Color.rgb(251, 191, 36)
         "SPEAKING" -> Color.rgb(52, 211, 153)
         "HAPPY" -> Color.rgb(249, 168, 212)
+        "SURPRISED" -> Color.rgb(250, 204, 21)
         "CONFUSED" -> Color.rgb(192, 132, 252)
         "ERROR" -> Color.rgb(251, 113, 133)
         "SLEEPING" -> Color.rgb(100, 116, 139)
@@ -42,6 +43,7 @@ class NoxFaceView(context: Context) : View(context) {
             "THINKING" -> 55
             "SPEAKING" -> 100
             "HAPPY" -> 75
+            "SURPRISED" -> 110
             else -> 32
         }
         c.drawCircle(cx, cy, s * 5.8f, glow)
@@ -70,6 +72,10 @@ class NoxFaceView(context: Context) : View(context) {
         val mouth = RectF(cx - s * 1.45f, cy + s * .55f, cx + s * 1.45f, cy + s * 1.65f)
         when (state) {
             "SPEAKING" -> c.drawOval(mouth, paint)
+            "SURPRISED" -> c.drawOval(
+                RectF(cx - s * .65f, cy + s * .72f, cx + s * .65f, cy + s * 1.72f),
+                paint
+            )
             "ERROR" -> c.drawArc(mouth, 200f, 140f, false, paint)
             "THINKING" -> c.drawLine(cx - s * .7f, cy + s * 1.05f, cx + s * .7f, cy + s * 1.05f, paint)
             else -> c.drawArc(mouth, 20f, 140f, false, paint)
