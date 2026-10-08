@@ -26,15 +26,18 @@ O navegador deixa de ser a interface principal. A pasta `android/` contém o apl
 
 ## Recursos
 
-- carinha limpa, sem chat/botões permanentes;
-- toque em qualquer lugar da carinha para falar;
-- palavra de ativação **NOX**;
-- conexão com o Core no próprio aparelho ou em um PC da mesma rede;
-- voz ElevenLabs pelo endpoint `/api/voice`;
-- comandos com allowlist;
-- SQLite como banco planejado para memória;
-- Core Node.js + llama.cpp;
-- Qwen 0.5B Q4_K_M como configuração leve para ARM64.
+- carinha nativa com estados IDLE, LISTENING, THINKING, SPEAKING, HAPPY, CONFUSED e ERROR;
+- toque na carinha para falar e resposta por TTS do Android;
+- toque longo para configurar o endereço do NOX Core;
+- conexão PC/Redmi por Wi-Fi/LAN;
+- memória persistente em SQLite com comandos explícitos "lembre que..." e "esqueça...";
+- contexto de memória autorizado enviado ao Qwen;
+- monitoramento de CPU, RAM, disco, rede, processos, uptime e hostname;
+- ferramentas de Git e descoberta de projetos;
+- abertura segura do VS Code, pasta do NOX e navegador;
+- ações perigosas separadas e protegidas por confirmação explícita;
+- ElevenLabs opcional no Core, com voz nativa como fallback;
+- comandos naturais com allowlist; comandos arbitrários de shell continuam bloqueados.
 
 ## Android
 
@@ -83,17 +86,34 @@ curl -s http://127.0.0.1:8765/api/health
 curl -s http://127.0.0.1:8765/api/status
 ```
 
-## Comandos
+## Comandos naturais
 
-A API de comandos usa uma allowlist. Nesta primeira versão:
+O NOX reconhece frases em português e executa apenas ferramentas autorizadas. Exemplos:
 
 ```
-status
-pwd
-git status
+"quanto de RAM eu tenho?"
+"qual a CPU?"
+"qual o IP do computador?"
+"mostre os processos"
+"liste meus projetos"
+"qual a branch atual?"
+"abra o VS Code"
+"lembre que meu projeto principal é o NOX"
+"o que você lembra?"
+"esqueça meu projeto principal"
 ```
 
-Comandos arbitrários de shell não são aceitos pela IA.
+Ações como desligar ou reiniciar **nunca são executadas imediatamente**. O NOX pede uma confirmação explícita.
+
+## Memória
+
+A memória usa SQLite no Core e só recebe informações quando o usuário pede explicitamente para lembrar. APIs:
+
+```
+GET  /api/memory
+GET  /api/memory?q=projeto
+POST /api/memory
+```
 
 ## Voz
 
@@ -137,6 +157,6 @@ A `ui/face.html` continua disponível como fallback/diagnóstico, mas não é ma
 
 ## Status
 
-**NOX 1.0 foundation**
+**NOX 1.1 — Core + memória + ferramentas + ponte Android**
 
 A camada Android, conexão Core/PC, voz, palavra-chave e comandos seguros estão preparadas. A próxima etapa é finalizar o banco SQLite de memória e evoluir as ferramentas autorizadas.
