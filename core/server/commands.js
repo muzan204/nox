@@ -57,41 +57,140 @@ function normalize(input) {
   return String(input || "")
     .trim()
     .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[?!.]+$/g, "")
     .replace(/\s+/g, " ");
 }
 
-async function executeCommand(input, ctx) {
+function detectCommandKeys(input) {
   const lower = normalize(input);
+  const keys = [];
 
-  if (lower === "status" || lower.includes("status do sistema") || lower.includes("como está o sistema"))
-    return SAFE.status(ctx);
+  const add = key => {
+    if (!keys.includes(key)) keys.push(key);
+  };
 
-  if (lower === "pwd" || lower.includes("onde estou") || lower.includes("qual a pasta atual"))
-    return SAFE.pwd(ctx);
+  if (
+    lower === "status" ||
+    lower.includes("status do sistema") ||
+    lower.includes("status atual do sistema") ||
+    lower.includes("como esta o sistema")
+  ) add("status");
 
-  if (lower === "git status" || lower.includes("status do git") || lower.includes("git está limpo"))
-    return SAFE.gitStatus(ctx);
+  if (
+    lower === "pwd" ||
+    lower.includes("qual a pasta atual") ||
+    lower.includes("qual e a pasta atual") ||
+    lower.includes("pasta atual")
+  ) add("pwd");
 
-  if (lower === "git branch" || lower.includes("qual a branch") || lower.includes("branch atual"))
-    return SAFE.gitBranch(ctx);
+  if (
+    lower === "git status" ||
+    lower.includes("status do git") ||
+    lower.includes("git esta limpo")
+  ) add("gitStatus");
 
-  if (lower === "git log" || lower.includes("últimos commits") || lower.includes("historico do git") || lower.includes("histórico do git"))
-    return SAFE.gitLog(ctx);
+  if (
+    lower === "git branch" ||
+    lower.includes("qual a branch") ||
+    lower.includes("branch atual") ||
+    lower.includes("branch do git")
+  ) add("gitBranch");
 
-  if (lower === "hostname" || lower.includes("nome do computador") || lower.includes("nome da máquina") || lower.includes("nome da maquina"))
-    return SAFE.hostname(ctx);
+  if (
+    lower === "git log" ||
+    lower.includes("ultimos commits") ||
+    lower.includes("historico do git")
+  ) add("gitLog");
 
-  if (lower === "uptime" || lower.includes("tempo ligado") || lower.includes("há quanto tempo") || lower.includes("ha quanto tempo"))
-    return SAFE.uptime(ctx);
+  if (
+    lower === "hostname" ||
+    lower.includes("nome do computador") ||
+    lower.includes("nome desta maquina") ||
+    lower.includes("nome da maquina")
+  ) add("hostname");
 
-  if (lower === "memória" || lower === "memoria" || lower.includes("quanto de ram") || lower.includes("memória livre") || lower.includes("memoria livre"))
-    return SAFE.memory(ctx);
+  if (
+    lower === "uptime" ||
+    lower.includes("tempo ligado") ||
+    lower.includes("ha quanto tempo o computador") ||
+    lower.includes("ha quanto tempo esta ligado")
+  ) add("uptime");
 
-  if (lower === "ls" || lower === "dir" || lower.includes("listar arquivos") || lower.includes("listar a pasta") || lower.includes("o que tem nessa pasta"))
-    return SAFE.listRoot(ctx);
+  if (
+    lower === "memoria" ||
+    lower === "ram" ||
+    lower.includes("quanto de ram") ||
+    lower.includes("ram livre") ||
+    lower.includes("memoria livre") ||
+    lower.includes("memoria do computador") ||
+    lower.includes("quanto de memoria")
+  ) add("memory");
 
-  throw new Error("Comando não permitido. O NOX só executa comandos explicitamente autorizados.");
+  if (
+    lower === "ls" ||
+    lower === "dir" ||
+    lower.includes("listar arquivos") ||
+    lower.includes("listar a pasta") ||
+    lower.includes("o que tem nessa pasta")
+  ) add("listRoot");
+
+  return keys;
 }
 
-module.exports = { executeCommand };
+async function executeNaturalCommands(input, ctx) {
+  const keys = detectCommandKeys(input);
+
+  if (!keys.length) {
+    return { matched: false };
+  }
+
+  const labels = {
+    status: "Status do sistema",
+    hostname: "Nome do computador",
+    memory: "Memória",
+    gitBranch: "Branch do Git",
+    gitStatus: "Status do Git",
+    gitLog: "Últimos commits",
+    uptime: "Tempo ligado",
+    pwd: "Pasta atual",
+    listRoot: "Conteúdo da pasta"
+  };
+
+  const results = [];
+
+  for (const key of keys) {
+    try {
+      const result = await SAFE[key](ctx);
+      results.push(`${labels[key]}: ${result.text}`);
+    } catch (error) {
+      results.push(`${labels[key]}: erro — ${error.message}`);
+    }
+  }
+
+  return {
+    matched: true,
+    text: results.join("\n"),
+    commands: keys
+  };
+}
+
+async function executeCommand(input, ctx) {
+  const keys = detectCommandKeys(input);
+
+  if (keys.length !== 1) {
+    throw new Error(
+      keys.length > 1
+        ? "Use uma frase com um único comando neste endpoint."
+        : "Comando não permitido. O NOX só executa comandos explicitamente autorizados."
+    );
+  }
+
+  return SAFE[keys[0]](ctx);
+}
+
+module.exports = {
+  executeCommand,
+  executeNaturalCommands
+};
