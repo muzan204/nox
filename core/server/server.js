@@ -78,6 +78,7 @@ const STATES = {
   SPEAKING: "SPEAKING",
   HAPPY: "HAPPY",
   CONFUSED: "CONFUSED",
+  SURPRISED: "SURPRISED",
   SLEEPING: "SLEEPING",
   ERROR: "ERROR"
 };
@@ -437,7 +438,7 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "0.7.0",
+        version: "0.8.0",
         faceState,
         time: new Date().toISOString()
       });
@@ -456,7 +457,7 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "0.6.0",
+        version: "0.8.0",
         faceState,
         chatBusy,
         voiceBusy,
@@ -471,7 +472,15 @@ const server = http.createServer(async (req, res) => {
           model: ELEVENLABS_MODEL_ID
         },
         llama: {
-          baseUrl: LLAMA_BASE_URL
+          baseUrl: LLAMA_BASE_URL,
+          maxTokens: MAX_TOKENS,
+          temperature: TEMPERATURE
+        },
+        system: {
+          platform: process.platform,
+          arch: process.arch,
+          node: process.version,
+          uptimeSeconds: Math.floor(process.uptime())
         }
       });
 
