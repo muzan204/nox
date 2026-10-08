@@ -9,13 +9,18 @@
     <application
         android:theme="@style/Theme.NOX"
         android:label="NOX"
+        android:icon="@drawable/ic_nox"
+        android:roundIcon="@drawable/ic_nox"
         android:allowBackup="false"
         android:supportsRtl="true">
-        <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true">
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
-        </intent-filter>
+            </intent-filter>
         </activity>
         <service
             android:name=".WakeWordService"
