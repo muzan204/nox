@@ -1,0 +1,30 @@
+# Segredos
+config/.env
+*.key
+*.pem
+
+# Modelos de IA
+models/
+*.gguf
+*.bin
+*.safetensors
+
+# Áudio gerado
+voice/*.mp3
+voice/*.wav
+voice/*.ogg
+
+# Logs
+logs/
+*.log
+
+# Backups locais
+*.backup
+*.bak
+
+# Node
+node_modules/
+
+# Temporários
+.tmp/
+temp/

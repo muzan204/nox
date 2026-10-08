@@ -1,0 +1,27 @@
+<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>NOX</title>
+<style>
+body{margin:0;background:#05070d;color:#cfe;font-family:sans-serif;display:flex;flex-direction:column;height:100vh}
+#f{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:28px;padding:16px;text-align:center}
+#e{display:flex;gap:40px}
+.e{width:60px;height:60px;border-radius:50%;background:#0ff;box-shadow:0 0 30px #0ff;transition:.3s}
+[data-s=THINKING] .e{background:#fb0;box-shadow:0 0 30px #fb0;animation:p 1s infinite}
+[data-s=SPEAKING] .e{background:#4f8;box-shadow:0 0 30px #4f8;animation:p .4s infinite}
+[data-s=LISTENING] .e{background:#48f;box-shadow:0 0 30px #48f}
+[data-s=ERROR] .e{background:#f44;box-shadow:0 0 30px #f44}
+[data-s=SLEEPING] .e{height:6px}
+@keyframes p{50%{transform:scale(.7)}}
+#t{max-width:90%;font-size:18px}
+#b{display:flex;gap:8px;padding:12px}
+#i{flex:1;padding:12px;border-radius:10px;border:0;background:#111a2b;color:#fff;font-size:16px}
+#m{padding:12px 16px;border:0;border-radius:10px;background:#0ff;font-size:18px}
+</style>
+<div id=f><div id=e><div class=e></div><div class=e></div></div><div id=t>Oi, eu sou o NOX.</div></div>
+<div id=b><input id=i placeholder="Fale com o NOX"><button id=m>🎤</button></div>
+<script>
+const b=document.body,t=document.getElementById('t'),i=document.getElementById('i');
+new EventSource('/api/events').onmessage=e=>{const d=JSON.parse(e.data);if(d.state)b.dataset.s=d.state};
+async function send(m){if(!m)return;t.textContent='…';try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:m})});const d=await r.json();t.textContent=d.text||d.error}catch(e){t.textContent='Erro: '+e.message}}
+i.onkeydown=e=>{if(e.key==='Enter'){send(i.value);i.value=''}};
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+document.getElementById('m').onclick=()=>{if(!SR)return alert('Sem reconhecimento de voz neste navegador');const r=new SR();r.lang='pt-BR';fetch('/api/face-state',{method:'POST',headers:{'Content-Type':'application/json'},body:'{"state":"LISTENING"}'});r.onresult=e=>send(e.results[0][0].transcript);r.start()};
+</script>

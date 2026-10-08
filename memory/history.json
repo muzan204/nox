@@ -1,0 +1,82 @@
+[
+  {
+    "role": "user",
+    "content": "Oi, tudo bem?"
+  },
+  {
+    "role": "assistant",
+    "content": "Olá, tudo bem? Seja bem-vindo ao NOX. Como posso ajudar você hoje?"
+  },
+  {
+    "role": "user",
+    "content": "Me diga uma curiosidade."
+  },
+  {
+    "role": "assistant",
+    "content": "Claro! Como sou NOX, fui criado e personalizado para responder a perguntas em português do Brasil. Como você gostaria de saber alguma coisa?"
+  },
+  {
+    "role": "user",
+    "content": "Oi"
+  },
+  {
+    "role": "assistant",
+    "content": "Olá! Como posso ajudar hoje?"
+  },
+  {
+    "role": "user",
+    "content": "Responda só: qual é a capital do Brasil?"
+  },
+  {
+    "role": "assistant",
+    "content": "A capital do Brasil é Brasília."
+  },
+  {
+    "role": "user",
+    "content": "Oi Marcos tudo bom"
+  },
+  {
+    "role": "assistant",
+    "content": "Olá Marcos! Estou bem, obrigado. Como posso ajudar você hoje?"
+  },
+  {
+    "role": "user",
+    "content": "quem sou eu"
+  },
+  {
+    "role": "assistant",
+    "content": "Você é uma pessoa chamada Gustavo, não Marcos."
+  },
+  {
+    "role": "user",
+    "content": "E aí de boa"
+  },
+  {
+    "role": "assistant",
+    "content": "Olá Gustavo! Como posso te ajudar hoje?"
+  },
+  {
+    "role": "user",
+    "content": "gosta da memória não me chame de Gustavo me chama de Senhor Gustavo"
+  },
+  {
+    "role": "assistant",
+    "content": "Entendo sua situação, mas como assistente, não posso assisti-los."
+  },
+  {
+    "role": "user",
+    "content": "Me chame de senhor Gustavo"
+  },
+  {
+    "role": "assistant",
+    "content": "Olá, Senhor Gustavo! Como posso ajudar hoje?"
+  },
+  {
+    "role": "user",
+    "content": "Opa"
+  },
+  {
+    "role": "assistant",
+    "content": "Olá! Como posso ajudar hoje?"
+  }
+]
