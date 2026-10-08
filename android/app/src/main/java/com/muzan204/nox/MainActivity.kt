@@ -37,7 +37,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.activity_main)
 
@@ -45,18 +44,12 @@ class MainActivity : ComponentActivity() {
         api = NoxApi(this)
         memory = NoxMemory(this)
 
-        // A Activity must open even when microphone permission is unavailable.
-        // Wake Word is started only after the user grants microphone access.
         registerWakeReceiver()
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.RECORD_AUDIO),
-                10
-            )
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 10)
         } else {
             startWakeWordSafely()
         }
@@ -79,11 +72,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
-        permissions: Array<out String>,
+        permissions: Array<String>,
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
         if (requestCode == 10 &&
             grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
@@ -106,8 +98,6 @@ class MainActivity : ComponentActivity() {
         try {
             startService(Intent(this, WakeWordService::class.java))
         } catch (_: Exception) {
-            // The face must remain usable even if the background wake service
-            // is unavailable on a particular Android/OEM configuration.
         }
     }
 
@@ -119,11 +109,7 @@ class MainActivity : ComponentActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.RECORD_AUDIO),
-                10
-            )
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 10)
             return
         }
 
@@ -145,9 +131,7 @@ class MainActivity : ComponentActivity() {
                         .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                         ?.firstOrNull()
                         .orEmpty()
-
-                    if (text.isNotBlank()) send(text)
-                    else face.state = "IDLE"
+                    if (text.isNotBlank()) send(text) else face.state = "IDLE"
                 }
 
                 override fun onError(error: Int) {
@@ -157,10 +141,7 @@ class MainActivity : ComponentActivity() {
             })
 
             val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                putExtra(
-                    RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-                )
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale("pt", "BR"))
             }
 
@@ -177,7 +158,6 @@ class MainActivity : ComponentActivity() {
 
         Thread {
             val result = api.chat(text)
-
             if (result == null) {
                 runOnUiThread { face.state = "ERROR" }
                 return@Thread
@@ -196,7 +176,6 @@ class MainActivity : ComponentActivity() {
         runOnUiThread {
             try {
                 player?.release()
-
                 val file = File(cacheDir, "nox-voice.mp3")
                 file.writeBytes(bytes)
 
