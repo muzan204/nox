@@ -17,7 +17,7 @@ body{
   background:radial-gradient(120% 80% at 50% 0%,#0d1630 0%,#070a14 55%,#04060c 100%);
   color:#dff6ff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 body[data-s=LISTENING]{--c:#60a5fa}body[data-s=THINKING]{--c:#fbbf24}body[data-s=SPEAKING]{--c:#34d399}
-body[data-s=HAPPY]{--c:#f9a8d4}body[data-s=CONFUSED]{--c:#c084fc}body[data-s=ERROR]{--c:#fb7185}body[data-s=SLEEPING]{--c:#64748b}
+body[data-s=HAPPY]{--c:#f9a8d4}body[data-s=CONFUSED]{--c:#c084fc}body[data-s=SURPRISED]{--c:#facc15}body[data-s=ERROR]{--c:#fb7185}body[data-s=SLEEPING]{--c:#64748b}
 #aura{position:absolute;inset:0;pointer-events:none;z-index:0}
 #aura::before{content:"";position:absolute;inset:0;background:radial-gradient(55% 32% at 50% 36%,var(--c),transparent 70%);opacity:.14;animation:glow 5s ease-in-out infinite}
 @keyframes glow{50%{opacity:.26}}
@@ -76,8 +76,8 @@ body[data-s=LISTENING] #mic::after{animation:ring 1.2s ease-out infinite}@keyfra
 <footer><div id="bar"><input id="i" placeholder="Fale com o NOX" autocomplete="off" autocapitalize="sentences" enterkeyhint="send"><button id="send" aria-label="Enviar"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div><button id="mic" aria-label="Falar"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button></footer>
 <script>
 const $=id=>document.getElementById(id),body=document.body,bot=$('bot'),me=$('me'),inp=$('i'),fx=$('fx'),st=$('st'),dot=$('dot'),gaze=$('gaze');
-const LABEL={IDLE:'Pronto',LISTENING:'Ouvindo…',THINKING:'Pensando…',SPEAKING:'Falando…',HAPPY:'Feliz',CONFUSED:'Confuso',SLEEPING:'Dormindo',ERROR:'Erro'};
-const FX={SLEEPING:'z z Z',CONFUSED:'?',HAPPY:'♥'};
+const LABEL={IDLE:'Pronto',LISTENING:'Ouvindo…',THINKING:'Pensando…',SPEAKING:'Falando…',HAPPY:'Feliz',CONFUSED:'Confuso',SURPRISED:'Surpreso',SLEEPING:'Dormindo',ERROR:'Erro'};
+const FX={SLEEPING:'z z Z',CONFUSED:'?',HAPPY:'♥',SURPRISED:'!'};
 let serverState='IDLE',busy=false,timer=null,currentAudio=null,currentSpeech=null;
 
 function paint(s){body.dataset.s=s;st.textContent=LABEL[s]||s;const t=FX[s];fx.textContent=t||'';fx.classList.toggle('on',!!t)}
