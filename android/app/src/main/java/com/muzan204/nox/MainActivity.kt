@@ -71,11 +71,12 @@ class MainActivity : ComponentActivity() {
             }
             override fun onError(error: Int) { listening = false; face.state = "IDLE" }
         })
-        recognizer!!.startListening(RecognizerIntent().apply {
-            action = RecognizerIntent.ACTION_RECOGNIZE_SPEECH
+
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale("pt", "BR"))
-        })
+        }
+        recognizer!!.startListening(intent)
     }
 
     private fun send(text: String) {
@@ -142,4 +143,6 @@ open class SimpleRecognitionListener : RecognitionListener {
     override fun onEndOfSpeech() {}
     override fun onPartialResults(partialResults: Bundle?) {}
     override fun onEvent(eventType: Int, params: Bundle?) {}
+    override fun onError(error: Int) {}
+    override fun onResults(results: Bundle) {}
 }
