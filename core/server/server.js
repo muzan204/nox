@@ -481,9 +481,45 @@ const server = http.createServer(async (req, res) => {
           arch: process.arch,
           node: process.version,
           uptimeSeconds: Math.floor(process.uptime())
+        },
+        memory: {
+          count: memory.stats()
         }
       });
 
+      return;
+    }
+
+    // --------------------------------------------------------
+    // CAPABILITIES
+    // --------------------------------------------------------
+
+    if (
+      req.method === "GET" &&
+      url.pathname === "/api/capabilities"
+    ) {
+      json(res, 200, {
+        ok: true,
+        service: "NOX Core",
+        version: "0.8.0",
+        architecture: {
+          brain: "PC / llama.cpp + Qwen",
+          body: "Android / rosto + microfone + voz",
+          transport: "HTTP + SSE na rede local"
+        },
+        faceStates: Object.values(STATES),
+        features: [
+          "memória SQLite",
+          "comandos seguros",
+          "Git",
+          "projetos",
+          "monitoramento do sistema",
+          "VS Code",
+          "navegador",
+          "voz",
+          "confirmação para ações perigosas"
+        ]
+      });
       return;
     }
 
