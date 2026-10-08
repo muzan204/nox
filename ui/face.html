@@ -26,7 +26,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:14p
 #chip{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09)}
 #dot{width:8px;height:8px;border-radius:50%;background:#64748b}#dot.on{background:#34d399;box-shadow:0 0 8px #34d399}#dot.off{background:#fb7185}
 main{flex:1;min-height:0;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.4dvh;padding:0 20px}
-#face{position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;user-select:none;animation:float 6s ease-in-out infinite}
+#face{position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;user-select:none;animation:float 6s ease-in-out infinite;filter:drop-shadow(0 0 22px color-mix(in srgb,var(--c) 18%,transparent));transition:filter .5s ease}
 @keyframes float{50%{transform:translateY(-7px)}}#gaze{transition:transform .7s cubic-bezier(.2,.8,.2,1);transform:translate(var(--gx,0px),var(--gy,0px))}
 #eyes{display:flex;align-items:center;gap:calc(var(--s)*.62)}.ew{position:relative;display:flex;align-items:center;justify-content:center;height:calc(var(--s)*1.6)}
 .eye{position:relative;overflow:hidden;width:calc(var(--s)*var(--k,1));height:calc(var(--s)*1.25*var(--k,1));border-radius:40%;background:var(--c);box-shadow:0 0 calc(var(--s)*.4) var(--c);transition:width .35s,height .35s,border-radius .35s,transform .12s ease-in}
@@ -38,7 +38,7 @@ body.blink .eye{transform:scaleY(.08)}
 #mouth{--b:7px;margin-top:calc(var(--s)*.12);width:calc(var(--s)*.7);height:calc(var(--s)*.3);border:var(--b) solid var(--c);border-top:0;border-radius:0 0 999px 999px;transform-origin:50% 0;transition:width .3s,height .3s,border-radius .3s}
 #fx{position:absolute;top:-6px;right:-4%;font-size:calc(var(--s)*.34);font-weight:700;color:var(--c);opacity:0;pointer-events:none}
 #fx.on{animation:rise 2.6s ease-out infinite}@keyframes rise{0%{opacity:0;transform:translateY(10px)}30%{opacity:.95}100%{opacity:0;transform:translateY(-28px)}}
-body[data-s=LISTENING] .eye{--k:1.1}body[data-s=LISTENING] .brow{opacity:.9;transform:translateY(-6px)}body[data-s=LISTENING] #mouth{width:calc(var(--s)*.4);height:calc(var(--s)*.2)}
+body[data-s=LISTENING] .eye{--k:1.1}body[data-s=IDLE] #face:hover .eye{box-shadow:0 0 calc(var(--s)*.55) var(--c)}body[data-s=IDLE] #face:hover #mouth{transform:scaleX(1.08)}body[data-s=LISTENING] .brow{opacity:.9;transform:translateY(-6px)}body[data-s=LISTENING] #mouth{width:calc(var(--s)*.4);height:calc(var(--s)*.2)}
 body[data-s=THINKING] #eyes{animation:look 2.6s ease-in-out infinite}@keyframes look{0%,100%{transform:translateX(-10px)}50%{transform:translateX(10px)}}
 body[data-s=THINKING] .l .brow{opacity:.9;transform:translateY(-9px) rotate(-6deg)}body[data-s=THINKING] .r .brow{opacity:.9;transform:rotate(4deg)}
 body[data-s=THINKING] #mouth{width:calc(var(--s)*.34);height:0;border:0;border-bottom:var(--b) solid var(--c);border-radius:var(--b)}
@@ -86,11 +86,32 @@ const es=new EventSource('/api/events');es.onopen=()=>dot.className='on';es.oner
 es.onmessage=e=>{try{const d=JSON.parse(e.data);if(d.state){serverState=d.state;if(!currentAudio&&!currentSpeech)paint(d.state)}}catch{}};
 
 function blink(){body.classList.add('blink');setTimeout(()=>body.classList.remove('blink'),140);setTimeout(blink,2200+Math.random()*4200)}setTimeout(blink,2500);
-function look(){const calm=body.dataset.s==='IDLE'||body.dataset.s==='LISTENING';gaze.style.setProperty('--gx',(calm?(Math.random()*2-1)*14:0)+'px');gaze.style.setProperty('--gy',(calm?(Math.random()*2-1)*8:0)+'px');setTimeout(look,1800+Math.random()*3200)}look();
+let mouseX=0,mouseY=0;
+window.addEventListener('mousemove',e=>{
+  if(body.dataset.s!=='IDLE'&&body.dataset.s!=='LISTENING')return;
+  const x=(e.clientX/window.innerWidth-.5)*28;
+  const y=(e.clientY/window.innerHeight-.5)*16;
+  mouseX=x;mouseY=y;
+  gaze.style.setProperty('--gx',x.toFixed(1)+'px');
+  gaze.style.setProperty('--gy',y.toFixed(1)+'px');
+});
+function look(){
+  if(body.dataset.s==='IDLE'||body.dataset.s==='LISTENING'){
+    if(!mouseX&&!mouseY){
+      gaze.style.setProperty('--gx',((Math.random()*2-1)*10).toFixed(1)+'px');
+      gaze.style.setProperty('--gy',((Math.random()*2-1)*6).toFixed(1)+'px');
+    }
+  }
+  setTimeout(look,1800+Math.random()*3200)
+}
+look();
 
 $('face').onclick=()=>{if(serverState!=='IDLE'||busy)return;paint('HAPPY');setTimeout(()=>{if(!currentAudio&&!currentSpeech&&!busy)paint(serverState)},1700)};
 function showText(t,isErr){bot.classList.add('fade');setTimeout(()=>{bot.textContent=t;bot.classList.toggle('err',!!isErr);bot.classList.remove('fade');bot.scrollTop=0},180)}
 
+if('speechSynthesis' in window){
+  speechSynthesis.addEventListener('voiceschanged',()=>{}, {once:true});
+}
 function localSpeak(text){
   return new Promise((resolve,reject)=>{
     if(!('speechSynthesis' in window)) return reject(new Error('Seu navegador não oferece voz local.'));
@@ -166,6 +187,16 @@ $('mic').onclick=()=>{
   r.onend=()=>{if(!got&&!busy)setFace('IDLE')};
   try{r.start()}catch{busy=false;setFace('IDLE')}
 };
+window.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(currentAudio){try{currentAudio.pause()}catch{}currentAudio=null}
+    if(currentSpeech){try{speechSynthesis.cancel()}catch{}currentSpeech=null}
+    busy=false;setFace('IDLE');
+  }
+  if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)){
+    e.preventDefault();inp.focus();
+  }
+});
 paint('IDLE');
 </script>
 </body>
