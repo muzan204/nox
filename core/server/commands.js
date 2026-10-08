@@ -124,6 +124,30 @@ function normalize(input) {
     .replace(/[\u0300-\u036f]/g, "").replace(/[?!.]+$/g, "").replace(/\s+/g, " ");
 }
 
+function detectIdentity(input) {
+  const lower = normalize(input);
+  return [
+    "qual o seu nome",
+    "qual seu nome",
+    "quem e voce",
+    "como voce se chama",
+    "me diga seu nome",
+    "quem esta falando"
+  ].includes(lower);
+}
+
+function detectCreator(input) {
+  const lower = normalize(input);
+  return [
+    "quem te criou",
+    "quem criou voce",
+    "quem criou o nox",
+    "quem fez o nox",
+    "quem desenvolveu o nox",
+    "quem fez voce"
+  ].includes(lower);
+}
+
 function detectCommandKeys(input) {
   const lower = normalize(input);
   const keys = [];
@@ -214,4 +238,4 @@ async function executeCommand(input, ctx) {
   return SAFE[keys[0]](ctx);
 }
 
-module.exports = { executeCommand, executeNaturalCommands, detectCommandKeys, normalize };
+module.exports = { executeCommand, executeNaturalCommands, detectCommandKeys, normalize, detectIdentity, detectCreator };
