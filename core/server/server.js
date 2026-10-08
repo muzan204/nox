@@ -208,11 +208,20 @@ async function searchWeb(query) {
   const endpoint = "https://html.duckduckgo.com/html/?q=" +
     encodeURIComponent(String(query || "").trim());
 
-  const response = await fetch(endpoint, {
-    headers: {
-      "User-Agent": "NOX/1.0 (local assistant)"
-    }
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (NOX local assistant)"
+      },
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!response.ok) {
     throw new Error("Busca online indisponível no momento.");
@@ -220,24 +229,41 @@ async function searchWeb(query) {
 
   const html = await response.text();
   const results = [];
-  const pattern = /<a[^>]+class="result__a"[^>]*>([\\s\\S]*?)<\\/a>[\\s\\S]*?<a[^>]+class="result__snippet"[^>]*>([\\s\\S]*?)<\\/a>/gi;
 
+  const clean = value => String(value || "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#([0-9]+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/\\s+/g, " ")
+    .trim();
+
+  const linkPattern = /<a\\b(?=[^>]*class="[^"]*\\bresult__a\\b[^"]*")([^>]*)>([\\s\\S]*?)<\\/a>/gi;
   let match;
-  while ((match = pattern.exec(html)) && results.length < 6) {
-    const clean = value => value
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&amp;/g, "&")
-      .replace(/&quot;/g, '"')
-      .replace(/&#x27;/g, "'")
-      .replace(/&#39;/g, "'")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/\\s+/g, " ")
-      .trim();
 
-    const title = clean(match[1]);
-    const snippet = clean(match[2]);
-    if (title && snippet) results.push({ title, snippet });
+  while ((match = linkPattern.exec(html)) && results.length < 6) {
+    const attributes = match[1] || "";
+    const hrefMatch = attributes.match(/href="([^"]+)"/i);
+    if (!hrefMatch) continue;
+
+    let url = hrefMatch[1];
+    const uddg = url.match(/[?&]uddg=([^&]+)/i);
+    if (uddg) {
+      try { url = decodeURIComponent(uddg[1]); } catch {}
+    }
+
+    if (!/^https?:\\/\\//i.test(url)) continue;
+
+    const title = clean(match[2]);
+    const afterTitle = html.slice(linkPattern.lastIndex);
+    const snippetMatch = afterTitle.match(/class="[^"]*\\bresult__snippet\\b[^"]*"[^>]*>([\\s\\S]*?)<\\/(?:a|div)>/i);
+    const snippet = clean(snippetMatch ? snippetMatch[1] : "");
+
+    if (title) results.push({ title, snippet, url });
   }
 
   if (!results.length) {
@@ -245,8 +271,10 @@ async function searchWeb(query) {
   }
 
   return results.map((item, index) =>
-    (index + 1) + ". " + item.title + "\n" + item.snippet
-  ).join("\n\n");
+    (index + 1) + ". " + item.title +
+    (item.snippet ? "\\n" + item.snippet : "") +
+    "\\nFonte: " + item.url
+  ).join("\\n\\n");
 }
 
 async function chatWithLlamaServer(message, webContext = "") {
