@@ -1,7 +1,7 @@
 const http = require("node:http");
 const path = require("node:path");
 const fs = require("node:fs");
-const { spawn } = require("node:child_process");
+const { spawn, execFile } = require("node:child_process");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 
@@ -173,6 +173,11 @@ function readBody(req) {
 // ============================================================
 
 async function chatWithLlamaServer(message) {
+  const memories = memory.context(8);
+  const enrichedMessage = memories
+    ? message + "\n\nContexto de memória autorizado do NOX:\n" + memories
+    : message;
+
   const response = await fetch(
     `${LLAMA_BASE_URL}/v1/chat/completions`,
     {
@@ -188,7 +193,7 @@ async function chatWithLlamaServer(message) {
           },
           {
             role: "user",
-            content: message
+            content: enrichedMessage
           }
         ],
         temperature: TEMPERATURE,
@@ -344,6 +349,34 @@ const {
   executeCommand,
   executeNaturalCommands
 } = require("./commands");
+const memory = require("./memory");
+const { createToken } = require("./permissions");
+
+let pendingDangerous = null;
+
+function dangerousRequest(message) {
+  const lower = String(message || "").toLowerCase();
+  if (/(desligar|desligue|desliga).*(computador|pc|máquina|maquina)/.test(lower)) return "shutdown";
+  if (/(reiniciar|reinicie|reinicia).*(computador|pc|máquina|maquina)/.test(lower)) return "restart";
+  return null;
+}
+
+function confirmationRequest(message) {
+  return /^(confirmo|confirmar|sim,? confirmo|pode executar|pode fazer)$/i.test(String(message || "").trim());
+}
+
+function runDangerous(action) {
+  return new Promise((resolve, reject) => {
+    if (process.platform !== "win32") {
+      const file = action === "shutdown" ? "shutdown" : "reboot";
+      const args = action === "shutdown" ? ["-h", "now"] : [];
+      execFile(file, args, { timeout: 5000 }, error => error ? reject(error) : resolve());
+      return;
+    }
+    const args = action === "shutdown" ? ["/s", "/t", "5"] : ["/r", "/t", "5"];
+    execFile("shutdown.exe", args, { timeout: 5000, windowsHide: true }, error => error ? reject(error) : resolve());
+  });
+}
 
 // ============================================================
 // HTTP SERVER
@@ -404,7 +437,7 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "0.6.0",
+        version: "0.7.0",
         faceState,
         time: new Date().toISOString()
       });
@@ -552,6 +585,41 @@ const server = http.createServer(async (req, res) => {
       setFaceState(STATES.THINKING);
 
       try {
+        if (confirmationRequest(message) && pendingDangerous && pendingDangerous.expiresAt > Date.now()) {
+          const action = pendingDangerous.action;
+          pendingDangerous = null;
+          await runDangerous(action);
+          setFaceState(STATES.HAPPY);
+          json(res, 200, {
+            ok: true,
+            text: action === "shutdown"
+              ? "Confirmado. O computador será desligado em alguns segundos."
+              : "Confirmado. O computador será reiniciado em alguns segundos.",
+            source: "dangerous-action",
+            action
+          });
+          return;
+        }
+
+        const danger = dangerousRequest(message);
+        if (danger) {
+          pendingDangerous = {
+            action: danger,
+            token: createToken(danger),
+            expiresAt: Date.now() + 30000
+          };
+          json(res, 200, {
+            ok: true,
+            text: danger === "shutdown"
+              ? "Posso desligar o computador. Essa ação exige confirmação. Diga 'confirmo' para continuar."
+              : "Posso reiniciar o computador. Essa ação exige confirmação. Diga 'confirmo' para continuar.",
+            source: "confirmation-required",
+            action: danger,
+            expiresInMs: 30000
+          });
+          return;
+        }
+
         const commandResult = await executeNaturalCommands(
           message,
           { root: ROOT }
