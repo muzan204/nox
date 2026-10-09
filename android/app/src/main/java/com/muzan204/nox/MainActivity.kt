@@ -1,10 +1,14 @@
 package com.muzan204.nox
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,7 +16,7 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
-import android.content.Intent
+import android.speech.tts.UtteranceProgressListener
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
@@ -33,6 +37,13 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     private val serverUrl: String
         get() = prefs.getString("server_url", "http://127.0.0.1:8765")!!.trimEnd('/')
 
+    private val wakeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            // Mesmo caminho do toque na carinha: dizer "NOX" liga o microfone.
+            startListening()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prefs = getSharedPreferences("nox", Context.MODE_PRIVATE)
@@ -45,12 +56,68 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
 
         tts = TextToSpeech(this, this)
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 10)
-        }
-
+        requestNeededPermissions()
         pollState()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter(WakeWordService.ACTION_WAKE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(wakeReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(wakeReceiver, filter)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        try { unregisterReceiver(wakeReceiver) } catch (_: Exception) {}
+    }
+
+    private fun requestNeededPermissions() {
+        val needed = mutableListOf<String>()
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
+        ) needed += Manifest.permission.RECORD_AUDIO
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED
+        ) needed += Manifest.permission.POST_NOTIFICATIONS
+
+        if (needed.isEmpty()) {
+            startWakeService()
+        } else {
+            ActivityCompat.requestPermissions(this, needed.toTypedArray(), 10)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 10 &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+        ) {
+            startWakeService()
+        }
+    }
+
+    private fun startWakeService() {
+        ContextCompat.startForegroundService(this, Intent(this, WakeWordService::class.java))
+    }
+
+    private fun pauseWakeService() {
+        startService(Intent(this, WakeWordService::class.java).setAction(WakeWordService.ACTION_PAUSE))
+    }
+
+    private fun resumeWakeService() {
+        startService(Intent(this, WakeWordService::class.java).setAction(WakeWordService.ACTION_RESUME))
     }
 
     fun onFaceTapped() {
@@ -65,9 +132,12 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 10)
+            requestNeededPermissions()
             return
         }
+
+        // Evita que o serviço de wake word dispute o microfone com este reconhecimento.
+        pauseWakeService()
 
         speechRecognizer?.destroy()
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
@@ -78,13 +148,19 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             override fun onBufferReceived(buffer: ByteArray?) {}
             override fun onEndOfSpeech() { face.state = "THINKING" }
             override fun onError(error: Int) {
+                resumeWakeService()
                 face.state = "ERROR"
                 toast("Não consegui ouvir. Tente novamente.")
                 handler.postDelayed({ face.state = "IDLE" }, 1200)
             }
             override fun onResults(results: Bundle?) {
+                resumeWakeService()
                 val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
-                if (!text.isNullOrBlank()) sendMessage(text)
+                if (!text.isNullOrBlank()) {
+                    sendMessage(text)
+                } else {
+                    face.state = "IDLE"
+                }
             }
             override fun onPartialResults(partialResults: Bundle?) {}
             override fun onEvent(eventType: Int, params: Bundle?) {}
@@ -94,6 +170,7 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "pt-BR")
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
         }
 
         face.state = "LISTENING"
@@ -126,7 +203,7 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             } catch (error: Exception) {
                 runOnUiThread {
                     face.state = "ERROR"
-                    toast("NOX: \${error.message ?: "erro de conexão"}")
+                    toast("NOX: ${error.message ?: "erro de conexão"}")
                     handler.postDelayed({ face.state = "IDLE" }, 1800)
                 }
             }
@@ -141,6 +218,16 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         if (status == TextToSpeech.SUCCESS) {
             tts?.language = Locale("pt", "BR")
             tts?.setSpeechRate(0.98f)
+            tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String?) {}
+                override fun onDone(utteranceId: String?) {
+                    runOnUiThread { if (face.state == "SPEAKING") face.state = "IDLE" }
+                }
+                @Deprecated("Deprecated in Java", ReplaceWith(""))
+                override fun onError(utteranceId: String?) {
+                    runOnUiThread { if (face.state == "SPEAKING") face.state = "IDLE" }
+                }
+            })
         }
     }
 
@@ -185,6 +272,7 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     }
 
     override fun onDestroy() {
+        handler.removeCallbacksAndMessages(null)
         speechRecognizer?.destroy()
         tts?.stop()
         tts?.shutdown()

@@ -1,39 +1,39 @@
-﻿{
-    "name":  "NOX",
-    "version":  "1.0.0",
-    "server":  {
-                   "host":  "0.0.0.0",
-                   "port":  8765
-               },
-    "llamaServer":  {
-                        "baseUrl":  "http://127.0.0.1:3001",
-                        "model":  "qwen2.5-0.5b-instruct-q4_k_m",
-                        "context":  1024,
-                        "threads":  4,
-                        "maxTokens":  48,
-                        "temperature":  0.7
-                    },
-    "assistant":  {
-                      "language":  "pt-BR",
-                      "wakeWord":  "Nox",
-                      "systemPrompt":  "VocÃª Ã© NOX, assistente pessoal local do senhor Gustavo. Responda sempre em portuguÃªs do Brasil. Chame o usuÃ¡rio de senhor Gustavo. Seja natural, claro, objetivo e amigÃ¡vel. DÃª respostas curtas por padrÃ£o, especialmente no celular. NÃ£o invente informaÃ§Ãµes. Se nÃ£o souber, diga que nÃ£o sabe."
-                  },
-    "mobile":  {
-                   "enabled":  true,
-                   "defaultServerUrl":  "http://127.0.0.1:8765",
-                   "wakeWord":  "NOX",
-                   "tapToTalk":  true
-               },
-    "memory":  {
-                   "engine":  "sqlite",
-                   "path":  "memory/nox.db"
-               },
-    "commands":  {
-                     "enabled":  true,
-                     "allowlist":  [
-                                       "status",
-                                       "pwd",
-                                       "git status"
-                                   ]
-                 }
+{
+  "name": "NOX",
+  "version": "1.3.0",
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8765
+  },
+  "llamaServer": {
+    "baseUrl": "http://127.0.0.1:3001",
+    "model": "qwen2.5-0.5b-instruct-q4_k_m",
+    "context": 1024,
+    "threads": 4,
+    "maxTokens": 256,
+    "temperature": 0.7
+  },
+  "assistant": {
+    "language": "pt-BR",
+    "wakeWord": "Nox",
+    "systemPrompt": "Você é NOX, assistente pessoal local do senhor Gustavo. Responda sempre em português do Brasil. Chame o usuário de senhor Gustavo. Seja natural, claro, objetivo e amigável. Dê respostas curtas por padrão, especialmente no celular. Não invente informações. Se não souber, diga que não sabe."
+  },
+  "mobile": {
+    "enabled": true,
+    "defaultServerUrl": "http://127.0.0.1:8765",
+    "wakeWord": "NOX",
+    "tapToTalk": true
+  },
+  "memory": {
+    "engine": "sqlite",
+    "path": "memory/nox.db"
+  },
+  "commands": {
+    "enabled": true,
+    "allowlist": [
+      "status",
+      "pwd",
+      "git status"
+    ]
+  }
 }

@@ -4,11 +4,13 @@ Aplicativo nativo do NOX. A carinha não depende mais do navegador.
 
 ## Comportamento
 
-- toque em qualquer parte da tela para abrir o microfone;
-- envia a fala para o NOX Core;
+- toque em qualquer parte da tela, ou diga “NOX”, para abrir o microfone;
+- toque longo (~1s) na carinha abre a configuração do endereço do Core;
+- envia a fala para o NOX Core e lê a resposta com a voz nativa do Android (TextToSpeech);
 - o Core pode estar no próprio Termux ou em um PC pela rede;
-- memória local pode usar SQLite;
-- a voz pode ser devolvida pelo Core/ElevenLabs.
+- a memória persistente (fatos, histórico) fica no Core, em SQLite;
+- exige permissão de microfone e, a partir do Android 13, de notificações
+  (usada pelo aviso do serviço de escuta em segundo plano).
 
 ## Servidor
 

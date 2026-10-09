@@ -8,9 +8,9 @@ Assistente pessoal local para Android/Termux, com carinha nativa, voz, memória 
 📱 NOX Android
 ├── 😶 carinha nativa
 ├── 👆 toque → microfone
-├── 🎙️ palavra-chave “NOX”
-├── 🔊 ElevenLabs via Core
-└── 💾 memória local (SQLite)
+├── 🎙️ palavra-chave “NOX” (serviço em segundo plano)
+├── 🔊 voz nativa do Android (TextToSpeech)
+└── 💾 memória persistente no Core (SQLite)
 
         │ Wi-Fi / LAN
         ▼
@@ -137,18 +137,9 @@ ELEVENLABS_VOICE_ID=...
 ELEVENLABS_MODEL_ID=eleven_multilingual_v2
 ```
 
-O Android envia a resposta do Core para `/api/voice` e reproduz o áudio retornado.
-
-## Memória
-
-A arquitetura 1.0 reserva SQLite para:
-
-- conversas;
-- preferências;
-- projetos;
-- fatos autorizados pelo usuário.
-
-A memória não deve salvar automaticamente tudo o que o usuário fala.
+O Core expõe `/api/voice` (ElevenLabs) para quem consumir a UI web (`ui/face.html`). O
+aplicativo Android usa a voz nativa do Android (TextToSpeech) como caminho principal e
+não depende do ElevenLabs para falar.
 
 ## Estrutura
 
@@ -156,7 +147,6 @@ A memória não deve salvar automaticamente tudo o que o usuário fala.
 nox/
 ├── ai/
 ├── android/
-├── commands/
 ├── config/
 ├── core/
 │   └── server/

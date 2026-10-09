@@ -255,7 +255,7 @@ async function searchWeb(query) {
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&#([0-9]+);/g, (_, n) => String.fromCharCode(Number(n)))
-    .replace(/\\s+/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 
   const pattern = new RegExp(
@@ -289,8 +289,8 @@ async function searchWeb(query) {
 
   return results.map((item, index) =>
     (index + 1) + ". " + item.title +
-    (item.snippet ? "\\n" + item.snippet : "")
-  ).join("\\n\\n");
+    (item.snippet ? "\n" + item.snippet : "")
+  ).join("\n\n");
 }
 
 async function chatWithLlamaServer(message, webContext = "") {
@@ -578,7 +578,7 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "0.8.0",
+        version: "1.3.0",
         faceState,
         time: new Date().toISOString()
       });
@@ -597,7 +597,7 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "0.8.0",
+        version: "1.3.0",
         faceState,
         chatBusy,
         voiceBusy,
@@ -641,7 +641,7 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "0.8.0",
+        version: "1.3.0",
         architecture: {
           brain: "PC / llama.cpp + Qwen",
           body: "Android / rosto + microfone + voz",
@@ -1037,7 +1037,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, HOST, () => {
   console.log("");
   console.log("======================================");
-  console.log("        NOX CORE 0.6 (Termux)");
+  console.log("        NOX CORE 1.3 (Termux)");
   console.log("======================================");
   console.log(`UI:      http://${HOST}:${PORT}/`);
   console.log(`API:     http://${HOST}:${PORT}/api/health`);
