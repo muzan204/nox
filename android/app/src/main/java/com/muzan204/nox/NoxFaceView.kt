@@ -135,26 +135,27 @@ class NoxFaceView(context: Context) : View(context) {
         paint.style = Paint.Style.FILL
 
         val eyeY = cy - s * .55f
-        val gap = s * 2.15f
-        val eyeW = s * 1.25f
+        val gap = s * 1.55f
+        val eyeW = s * .95f
         val eyeH = when (state) {
-            "HAPPY" -> s * .48f
-            "SLEEPING" -> s * .16f
-            "LISTENING" -> s * 1.45f
-            "CONFUSED" -> s * .95f
-            "ERROR" -> s * .9f
-            else -> s * 1.12f
+            "HAPPY" -> s * .42f
+            "SLEEPING" -> s * .14f
+            "LISTENING" -> s * 1.55f
+            "CONFUSED" -> s * 1.05f
+            "ERROR" -> s * .95f
+            else -> s * 1.25f
         }
         val openness = 1f - blinkAmt * .9f
 
+        // olhos ovais — a mesma forma do ícone e da logo do NOX
         c.save()
         c.scale(1f, openness, cx - gap, eyeY)
-        c.drawRoundRect(cx - gap - eyeW, eyeY - eyeH, cx - gap + eyeW, eyeY + eyeH, s, s, paint)
+        c.drawOval(cx - gap - eyeW, eyeY - eyeH, cx - gap + eyeW, eyeY + eyeH, paint)
         c.restore()
 
         c.save()
         c.scale(1f, openness, cx + gap, eyeY)
-        c.drawRoundRect(cx + gap - eyeW, eyeY - eyeH, cx + gap + eyeW, eyeY + eyeH, s, s, paint)
+        c.drawOval(cx + gap - eyeW, eyeY - eyeH, cx + gap + eyeW, eyeY + eyeH, paint)
         c.restore()
 
         paint.style = Paint.Style.STROKE

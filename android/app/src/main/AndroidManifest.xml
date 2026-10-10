@@ -9,8 +9,8 @@
     <application
         android:theme="@style/Theme.NOX"
         android:label="NOX"
-        android:icon="@drawable/ic_nox"
-        android:roundIcon="@drawable/ic_nox"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:allowBackup="false"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true">

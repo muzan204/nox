@@ -191,9 +191,16 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                 val body = JSONObject().put("message", message).toString()
                 connection.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
 
-                val text = connection.inputStream.bufferedReader().use { it.readText() }
+                // Em respostas de erro (4xx/5xx) o corpo JSON vem no errorStream, não no
+                // inputStream — ler o inputStream nesse caso derruba uma FileNotFoundException
+                // cuja mensagem é só a URL, escondendo o erro real do Core.
+                val ok = connection.responseCode in 200..299
+                val stream = if (ok) connection.inputStream else connection.errorStream
+                val text = stream?.bufferedReader()?.use { it.readText() } ?: ""
                 val json = JSONObject(text)
-                if (!json.optBoolean("ok", false)) throw Exception(json.optString("error", "Erro no NOX."))
+                if (!json.optBoolean("ok", false)) {
+                    throw Exception(json.optString("error", "Erro no NOX (HTTP ${connection.responseCode})."))
+                }
 
                 val answer = json.optString("text", "Não recebi uma resposta.")
                 runOnUiThread {
