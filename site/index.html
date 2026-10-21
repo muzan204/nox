@@ -4,31 +4,57 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<meta name="description" content="NOX — olhos e sorriso em neon.">
+<meta name="description" content="NOX — assistente por voz com olhos e boca em neon.">
 <title>NOX</title>
 <style>
 :root{color-scheme:dark;--cyan:#00f5f5;--white:#f8ffff}
 *{box-sizing:border-box}
 html,body{width:100%;height:100%;margin:0;background:#000;overflow:hidden}
-body{display:grid;place-items:center}
-.face{width:min(92vw,900px);height:min(76vh,560px);position:relative;display:flex;align-items:center;justify-content:center;gap:clamp(36px,10vw,120px);isolation:isolate}
-.eye{position:relative;width:clamp(100px,24vw,230px);height:clamp(150px,34vw,300px);border-radius:50%;background:radial-gradient(ellipse at 48% 42%,#071b20 0 35%,#003c43 60%,#00e9ef 77%,#00ffff 83%,#003a40 91%,#000 100%);box-shadow:0 0 14px #00f5f566,0 0 45px #00f5f533,inset 0 0 18px #00ffff77;animation:blink 6s infinite;overflow:hidden}
-.eye:before{content:"";position:absolute;width:34%;height:34%;left:25%;top:23%;border-radius:50%;background:var(--white);box-shadow:0 0 20px #fff}
+body{display:grid;place-items:center;touch-action:manipulation}
+.face{width:min(94vw,900px);height:min(88vh,650px);position:relative;display:flex;align-items:center;justify-content:center;gap:clamp(28px,9vw,110px);cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent;user-select:none}
+.eye{position:relative;flex:none;width:clamp(95px,23vw,225px);height:clamp(140px,33vw,295px);border-radius:50%;background:radial-gradient(ellipse at 48% 42%,#071b20 0 35%,#003c43 60%,#00e9ef 77%,#00ffff 83%,#003a40 91%,#000 100%);box-shadow:0 0 14px #00f5f566,0 0 45px #00f5f533,inset 0 0 18px #00ffff77;overflow:hidden;transform-origin:center;animation:blink 6s infinite;transition:height .22s ease,transform .22s ease,filter .22s ease}
+.eye:before{content:"";position:absolute;width:34%;height:34%;left:25%;top:23%;border-radius:50%;background:var(--white);box-shadow:0 0 20px #fff;transition:all .2s ease}
 .eye:after{content:"";position:absolute;width:12%;height:12%;right:19%;bottom:28%;border-radius:50%;background:#aaffff;box-shadow:0 0 12px #00ffff}
-.eye:nth-child(2){animation-delay:.12s}
-.brow{position:absolute;top:3%;width:31%;height:clamp(10px,2vw,20px);border-radius:100% 100% 20% 20%;background:var(--cyan);box-shadow:0 0 12px #00ffff,0 0 34px #00ffff66}
-.brow.left{left:5%;transform:rotate(-16deg)}
-.brow.right{right:5%;transform:rotate(16deg)}
-.mouth{position:absolute;left:50%;bottom:8%;width:clamp(100px,18vw,210px);height:clamp(35px,6vw,65px);transform:translateX(-50%);border-bottom:clamp(5px,.7vw,8px) solid var(--cyan);border-radius:0 0 50% 50%;filter:drop-shadow(0 0 8px #00ffff) drop-shadow(0 0 20px #00ffff66)}
+.brow{position:absolute;top:10%;width:30%;height:clamp(9px,1.8vw,18px);border-radius:100% 100% 20% 20%;background:var(--cyan);box-shadow:0 0 12px #00ffff,0 0 34px #00ffff66;transition:transform .2s ease,top .2s ease}
+.brow.left{left:7%;transform:rotate(-13deg)}
+.brow.right{right:7%;transform:rotate(13deg)}
+.mouth{position:absolute;left:50%;bottom:14%;width:clamp(100px,18vw,200px);height:clamp(32px,6vw,62px);transform:translateX(-50%);border-bottom:clamp(5px,.7vw,8px) solid var(--cyan);border-radius:0 0 50% 50%;filter:drop-shadow(0 0 8px #00ffff) drop-shadow(0 0 20px #00ffff66);transition:all .18s ease}
+.face.listening .eye{filter:brightness(1.4);box-shadow:0 0 22px #00ffffaa,0 0 70px #00ffff66,inset 0 0 24px #00ffffaa}
+.face.listening .brow.left{transform:rotate(-22deg) translateY(-7px)}
+.face.listening .brow.right{transform:rotate(22deg) translateY(-7px)}
+.face.thinking .eye{animation:think 1.1s ease-in-out infinite alternate}
+.face.thinking .mouth{width:clamp(48px,8vw,85px);height:2px;border-bottom-width:5px;border-radius:99px;bottom:17%}
+.face.speaking .mouth{animation:talk .18s ease-in-out infinite alternate}
+.face.speaking .eye:before{top:18%;transform:scale(1.08)}
+.face.error .mouth{width:clamp(70px,12vw,125px);height:clamp(24px,4vw,40px);border-bottom:0;border-top:5px solid var(--cyan);border-radius:50% 50% 0 0;bottom:12%}
 @keyframes blink{0%,44%,48%,100%{transform:scaleY(1)}46%,47%{transform:scaleY(.06)}}
-@media(prefers-reduced-motion:reduce){.eye{animation:none}}
+@keyframes think{from{transform:scaleY(.92) translateY(2px)}to{transform:scaleY(1.02) translateY(-3px)}}
+@keyframes talk{from{height:8px;width:clamp(80px,13vw,135px);border-radius:50%}to{height:clamp(26px,5vw,48px);width:clamp(48px,9vw,90px);border-radius:45% 45% 50% 50%;border-bottom-width:7px}}
+@media(max-width:420px){.face{gap:8vw;height:75vh}.eye{width:40vw;height:31vh}.brow{top:18%}.mouth{bottom:19%}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:1.2s!important;animation-iteration-count:1!important;transition:none!important}}
 </style>
 </head>
 <body>
-<main class="face" role="img" aria-label="Olhos e boca do NOX em neon azul sobre fundo preto">
-<span class="brow left"></span><span class="brow right"></span>
-<div class="eye"></div><div class="eye"></div>
-<div class="mouth"></div>
+<main class="face" id="face" role="button" tabindex="0" aria-label="NOX. Toque para falar.">
+<span class="brow left" aria-hidden="true"></span><span class="brow right" aria-hidden="true"></span>
+<div class="eye" aria-hidden="true"></div><div class="eye" aria-hidden="true"></div>
+<div class="mouth" aria-hidden="true"></div>
 </main>
+<script>
+(()=> {
+"use strict";
+const face=document.getElementById("face");
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+const canSpeak="speechSynthesis"in window;
+let state="idle",busy=false,recognition=null,history=[],restartTimer=null;
+const setState=s=>{state=s;face.classList.remove("idle","listening","thinking","speaking","error");face.classList.add(s);face.setAttribute("aria-label",({idle:"NOX. Toque para falar.",listening:"NOX está ouvindo.",thinking:"NOX está pensando.",speaking:"NOX está falando.",error:"NOX teve um problema. Toque para tentar novamente."})[s]||"NOX")};
+function say(text){return new Promise(resolve=>{if(!canSpeak){setState("idle");resolve();return}window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang="pt-BR";utterance.rate=1;utterance.pitch=1.04;utterance.onstart=()=>setState("speaking");utterance.onend=()=>{setState("idle");resolve()};utterance.onerror=()=>{setState("idle");resolve()};window.speechSynthesis.speak(utterance)})}
+async function answer(text){if(busy||!text.trim())return;busy=true;setState("thinking");history.push({role:"user",content:text.trim()});history=history.slice(-12);try{const response=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history})});let data={};try{data=await response.json()}catch{}if(!response.ok)throw new Error(data.error||"Não consegui acessar a inteligência agora.");if(typeof data.reply!=="string"||!data.reply.trim())throw new Error("Recebi uma resposta vazia.");history.push({role:"assistant",content:data.reply});history=history.slice(-12);await say(data.reply)}catch(err){setState("error");await say(err.message||"Tive um problema de conexão. Tente novamente.")}finally{busy=false;if(state!=="idle")setState("idle")}}
+function listen(){if(busy)return;if(!SpeechRecognition){setState("error");say("Este navegador não oferece reconhecimento de voz. Tente usar o Chrome atualizado.");return}try{if(canSpeak)window.speechSynthesis.cancel();recognition=new SpeechRecognition();recognition.lang="pt-BR";recognition.interimResults=false;recognition.maxAlternatives=1;recognition.onstart=()=>setState("listening");recognition.onresult=e=>{const spoken=e.results&&e.results[0]&&e.results[0][0]?e.results[0][0].transcript:"";if(spoken)answer(spoken);else{setState("idle");say("Não entendi. Pode falar de novo?")}};recognition.onerror=e=>{setState("error");if(e.error==="not-allowed"||e.error==="service-not-allowed")say("Preciso da permissão do microfone para ouvir você.");else if(e.error!=="aborted")say("Não consegui ouvir. Toque em mim e tente novamente.")};recognition.onend=()=>{if(state==="listening")setState("idle")};recognition.start()}catch{setState("error");say("Não consegui iniciar o microfone. Tente novamente.")}}
+face.addEventListener("click",listen);face.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();listen()}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&canSpeak)window.speechSynthesis.cancel()});
+setState("idle");
+})();
+</script>
 </body>
 </html>
