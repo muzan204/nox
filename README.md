@@ -2,7 +2,18 @@
 
 Assistente pessoal local para Android/Termux, com carinha nativa, voz, memória local, comandos seguros e conexão opcional com computador.
 
-## Arquitetura
+## Web (nova etapa)
+
+O projeto também inclui uma interface para navegador, otimizada para celular, com IA online, voz do navegador, histórico e memórias locais e login protegido.
+
+- Interface: `index.html`
+- Funções de sessão e IA: `api/session.js`, `api/chat.js`
+- Cabeçalhos de segurança: `vercel.json`
+- Instruções e variáveis de ambiente: [NOX-WEB.md](NOX-WEB.md)
+
+A versão web é independente do Core local: ela não executa comandos do Android/Termux e não usa automaticamente o modelo Qwen local. Configure as variáveis de ambiente necessárias na Vercel antes de testar. Não considere o site operacional até validar um deployment e a chave do provedor.
+
+## Arquitetura local
 
 ```
 📱 NOX Android
@@ -22,7 +33,7 @@ Assistente pessoal local para Android/Termux, com carinha nativa, voz, memória 
 └── 🌐 API HTTP
 ```
 
-O navegador deixa de ser a interface principal. A pasta `android/` contém o aplicativo Android nativo.
+O navegador deixa de ser a interface principal do aplicativo Android nativo, mas agora existe também uma versão web dedicada na raiz do repositório. A pasta `android/` continua preservada.
 
 ## Recursos
 
@@ -117,9 +128,9 @@ O NOX reconhece frases em português e executa apenas ferramentas autorizadas. E
 
 Ações como desligar ou reiniciar **nunca são executadas imediatamente**. O NOX pede uma confirmação explícita.
 
-## Memória
+## Memória local
 
-A memória usa SQLite no Core e só recebe informações quando o usuário pede explicitamente para lembrar. APIs:
+A memória do Core usa SQLite e só recebe informações quando o usuário pede explicitamente para lembrar. APIs existentes:
 
 ```
 GET  /api/memory
@@ -127,9 +138,11 @@ GET  /api/memory?q=projeto
 POST /api/memory
 ```
 
+Na versão web, histórico e memórias ficam no armazenamento local do navegador e não sincronizam entre dispositivos. As memórias web são enviadas ao provedor de IA junto com a mensagem; não salve informações secretas ou sensíveis.
+
 ## Voz
 
-Configure no arquivo `config/.env`:
+Configure no arquivo `config/.env` para a voz ElevenLabs do Core:
 
 ```
 ELEVENLABS_API_KEY=...
@@ -137,9 +150,7 @@ ELEVENLABS_VOICE_ID=...
 ELEVENLABS_MODEL_ID=eleven_multilingual_v2
 ```
 
-O Core expõe `/api/voice` (ElevenLabs) para quem consumir a UI web (`ui/face.html`). O
-aplicativo Android usa a voz nativa do Android (TextToSpeech) como caminho principal e
-não depende do ElevenLabs para falar.
+O Core expõe `/api/voice` para a UI web antiga `ui/face.html`. O aplicativo Android usa a voz nativa do Android (TextToSpeech) como caminho principal. A nova versão web usa as APIs de voz disponíveis no navegador.
 
 ## Estrutura
 
@@ -147,18 +158,20 @@ não depende do ElevenLabs para falar.
 nox/
 ├── ai/
 ├── android/
+├── api/           # funções serverless da versão web
 ├── config/
 ├── core/
 │   └── server/
 ├── memory/
 ├── scripts/
-└── ui/
+├── ui/            # interface legada/fallback do Core
+├── index.html     # nova interface web
+├── vercel.json
+└── NOX-WEB.md
 ```
-
-A `ui/face.html` continua disponível como fallback/diagnóstico, mas não é mais a interface principal.
 
 ## Status
 
-**NOX 1.3 — Core + memória + chat geral + contexto + busca online + ferramentas + ponte Android**
+**NOX 1.3 — Core local + versão web em desenvolvimento**
 
-A camada Android, conexão Core/PC, voz, palavra-chave e comandos seguros estão preparadas. A próxima etapa é finalizar o banco SQLite de memória e evoluir as ferramentas autorizadas.
+A camada Android, conexão Core/PC, voz, palavra-chave e comandos seguros continuam preservados. A versão web foi adicionada em uma branch de implementação e ainda precisa de configuração das variáveis e validação em deployment Vercel antes de ser considerada pronta para uso.
