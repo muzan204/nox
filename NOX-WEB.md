@@ -1,39 +1,38 @@
 # NOX Web (Vercel)
 
-Esta etapa adiciona uma interface web mobile-first sem remover o Core Android/Termux. A página raiz usa funções serverless para a IA online e APIs próprias para sessão.
+Interface mobile-first para conversar com NOX no navegador usando IA online do Google Gemini. O site fica aberto: não exige senha nem sessão de usuário.
 
 ## Recursos
-- Interface responsiva para navegador de celular.
-- Conversa com provedor compatível com Chat Completions.
-- Voz do navegador: reconhecimento de fala quando disponível e leitura em voz alta.
-- Histórico e memórias explícitas no navegador via localStorage.
-- Login por senha com cookie assinado, HttpOnly, SameSite=Lax e Secure em HTTPS.
-- Chave de IA somente no servidor; validação de entrada, verificação de origem, timeout, limite de requisições por instância e cabeçalhos de segurança.
+- Interface responsiva para celular.
+- IA online via Gemini API; a chave fica somente no servidor.
+- Voz do navegador: reconhecimento quando disponível e leitura em voz alta.
+- Histórico e memórias explícitas locais via localStorage, com opções para apagar/exportar.
+- Validação de entradas, verificação de origem, timeout, limite básico por instância e cabeçalhos de segurança.
 
 ## Variáveis de ambiente
-Configure em Vercel → Project → Settings → Environment Variables e faça um novo deployment depois de alterar variáveis:
-- NOX_ACCESS_PASSWORD: senha longa, com pelo menos 12 caracteres.
-- NOX_SESSION_SECRET: segredo aleatório com pelo menos 32 caracteres.
-- OPENAI_API_KEY: chave privada do provedor.
-- OPENAI_MODEL: opcional; padrão gpt-4o-mini.
-- OPENAI_BASE_URL: opcional; padrão https://api.openai.com/v1. Pode ser endpoint compatível com OpenAI.
+Na Vercel → Project → Settings → Environment Variables:
+- `GEMINI_API_KEY`: chave privada criada no Google AI Studio.
+- `GEMINI_MODEL`: opcional; padrão `gemini-2.5-flash`.
 
-Nunca coloque chaves no HTML, no Git ou em variáveis públicas.
+Nunca coloque a chave no HTML, no Git ou em variável pública. Após alterar variáveis, faça novo deployment.
 
 ## Deploy
-1. Importe muzan204/nox na Vercel e mantenha o diretório raiz na raiz do repositório.
-2. Configure as variáveis acima.
-3. Faça deploy de preview e teste login, mensagem, voz, histórico e logout antes de promover para produção.
-4. Revise os logs da função se houver falha.
+1. Importe `muzan204/nox` na Vercel com o diretório raiz do repositório.
+2. Configure `GEMINI_API_KEY` e, opcionalmente, `GEMINI_MODEL`.
+3. Faça deploy de preview e teste mensagens, voz, histórico e memória.
+4. Confira os logs se houver falha.
 
-O endpoint de sessão falha fechado quando os segredos não estão configurados. O chat exige sessão válida. O limitador em memória reduz abuso casual, mas não é distribuído; para produção pública, adicione proteção distribuída e monitoramento. A senha é compartilhada entre usuários nesta versão inicial, portanto não há contas individuais.
+## Segurança e custos
+Não há login, senha compartilhada ou cookie de sessão. Qualquer pessoa com o endereço pode enviar mensagens e consumir a quota/custo associado à chave Gemini. O limitador em memória é uma proteção básica, não distribuída. Antes de divulgar o site publicamente, configure quotas e alertas no provedor, limites de gastos quando disponíveis e proteção distribuída/firewall na Vercel. A verificação de origem não impede clientes automatizados. A chave permanece no servidor e não é enviada ao navegador.
+
+## Memória e privacidade
+- Histórico e memórias ficam neste navegador; não sincronizam entre aparelhos e somem ao limpar os dados do site.
+- Memórias selecionadas são enviadas ao Gemini junto com as mensagens; não salve dados secretos ou sensíveis.
+- A fala depende das APIs e permissões do navegador, e varia entre navegadores Android.
 
 ## Limites conhecidos
-- Memória e histórico são locais ao navegador; não sincronizam entre aparelhos e somem ao limpar os dados do site.
-- Memórias são incluídas no contexto da IA quando uma mensagem é enviada; não salve dados secretos ou sensíveis.
-- A fala depende das APIs e permissões do navegador. Reconhecimento de fala varia entre navegadores Android.
-- Esta etapa não hospeda o Core Termux, não executa comandos do dispositivo e não usa o modelo Qwen local. Essas funções não devem ser expostas à internet sem redesenho de autorização.
-- Ainda é necessário testar as funções em um deployment Vercel real.
+- A versão web não hospeda o Core Termux, não executa comandos do dispositivo e não usa automaticamente o modelo Qwen local.
+- A aplicação precisa ser validada em um deployment Vercel real antes de ser considerada pronta.
 
 ## Teste local
-A página pode ser servida como HTML, mas autenticação e funções /api/* precisam de runtime compatível com funções Vercel. Use a Vercel CLI (vercel dev) em ambiente Node.js com as variáveis configuradas para testar a aplicação completa.
+Use um runtime compatível com funções Vercel (por exemplo, `vercel dev`). A página estática sozinha não inclui o endpoint de IA.
