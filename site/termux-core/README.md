@@ -1,16 +1,16 @@
 # NOX Core local (Termux)
 
-Este serviço é um adaptador opcional para um servidor de modelo local compatível com a API OpenAI, como o endpoint local do llama.cpp. Ele não substitui a API online hospedada na Vercel.
+Este serviço é um adaptador opcional para um servidor de modelo local compatível com a API Chat Completions, como llama.cpp. A documentação central dos provedores fica em [../.. /brain/README.md](../../../../brain/README.md).
 
 ## Requisitos
 
 - Node.js 18 ou superior no Termux.
-- Um servidor de inferência local compatível com `POST /v1/chat/completions`, escutando em `127.0.0.1:8080`.
-- Nunca coloque chaves da IA online neste serviço nem no navegador.
+- Servidor local compatível com `POST /v1/chat/completions` em `127.0.0.1:8080`.
+- Modelo local já baixado e servidor de inferência iniciado.
 
 ## Configuração
 
-Na pasta `site/termux-core`, defina um token aleatório apenas para o serviço local e inicie-o:
+Na pasta `site/termux-core`:
 
 ```sh
 export NOX_LOCAL_TOKEN="$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))')"
@@ -21,19 +21,10 @@ export NOX_LOCAL_MODEL=local-model
 node server.mjs
 ```
 
-O token é segredo: não o publique, não o coloque no Git e não o embuta em JavaScript do site. O servidor fica vinculado a localhost por padrão e exige `Authorization: Bearer <token>` em `POST /chat`. A rota `GET /health` fornece apenas um status local.
+O token é segredo. Não o publique, não o coloque no Git e não o embuta no JavaScript do site. O servidor fica vinculado a localhost por padrão e exige `Authorization: Bearer <token>` em `POST /chat`.
 
-## Arquitetura híbrida
+## Limite importante de rede
 
-- Interface: `site/index.html` (olhos e boca ciano, fundo preto, voz do navegador).
-- IA online: `site/api/chat.js` na Vercel, com `GEMINI_API_KEY` configurada como variável privada.
-- IA local: este adaptador, ligado a um modelo local que implemente o endpoint de chat compatível.
-- Fallback: a aplicação pode usar a IA online se o serviço local estiver indisponível.
+A Vercel não pode acessar o localhost do celular. Se o site público chamar a API da Vercel, a variável `NOX_COMPAT_BASE_URL=http://127.0.0.1:...` apontará para a própria função hospedada, não para o Termux. Portanto, este adaptador local ainda não está ligado automaticamente ao roteador online. Para usar o cérebro local do telefone com o site hospedado, será necessário um canal privado e autenticado de pareamento/conectividade; não exponha a porta diretamente na internet.
 
-**Estado da integração:** este adaptador é uma base local independente. O navegador ainda não foi conectado a ele automaticamente; isso exige definir uma estratégia segura de pareamento entre a página HTTPS e o serviço localhost, sem expor o token no código público. Não exponha a porta 8765 à internet. HTTPS, CORS e permissões de microfone precisam ser validados no navegador real.
-
-## Limites
-
-- O adaptador valida método, rota, tamanho aproximado do corpo e mensagens; não substitui um gateway de segurança para exposição pública.
-- O serviço local depende de um servidor de modelo já iniciado.
-- Não foram executados testes neste ambiente nem realizado deploy da Vercel.
+Consulte `brain/README.md` na raiz do repositório para provedores online, fallback e variáveis de ambiente. Testes e deploy não foram realizados neste ambiente.
