@@ -1,177 +1,132 @@
-# NOX 1.3
+# ◉ NOX
 
-Assistente pessoal local para Android/Termux, com carinha nativa, voz, memória local, comandos seguros e conexão opcional com computador.
+<p align="center">
+  <strong>Seu assistente pessoal. Local quando precisa, web quando quiser.</strong><br>
+  Android · Termux · Google Gemini · Vercel
+</p>
 
-## Web (nova etapa)
+<p align="center">
+  <a href="https://github.com/muzan204/nox">Repositório</a> ·
+  <a href="https://github.com/muzan204/nox/tree/feat/nox-web-vercel/site">NOX Web</a> ·
+  <a href="https://github.com/muzan204/nox/pulls">Pull requests</a>
+</p>
 
-O projeto inclui uma interface para navegador, otimizada para celular, com IA online Gemini, voz do navegador, histórico e memórias locais. A versão web é aberta, sem senha ou sessão; qualquer pessoa com o endereço pode usar a API e consumir a quota de IA.
+---
 
-- Interface: `index.html`
-- Função de IA: `api/chat.js`
-- Cabeçalhos de segurança: `vercel.json`
-- Instruções: [NOX-WEB.md](NOX-WEB.md)
+## ✦ Sobre
 
-Configure `GEMINI_API_KEY` como variável privada na Vercel; opcionalmente defina `GEMINI_MODEL`. Nunca publique a chave no código. A versão web não executa comandos do Android/Termux e não usa automaticamente o modelo Qwen local. O deploy e os testes reais ainda precisam ser verificados.
+O **NOX** é um assistente pessoal em evolução, com duas partes separadas:
 
-## Arquitetura local
+- **NOX Web** — interface para conversar no navegador, com IA online Gemini, voz do navegador e memória local.
+- **NOX Local** — projeto Android/Termux com interface nativa, voz, memória persistente e ferramentas locais autorizadas.
 
-```
-📱 NOX Android
-├── 😶 carinha nativa
-├── 👆 toque → microfone
-├── 🎙️ palavra-chave “NOX” (serviço em segundo plano)
-├── 🔊 voz nativa do Android (TextToSpeech)
-└── 💾 memória persistente no Core (SQLite)
+A versão web foi organizada em uma pasta independente para facilitar a configuração da Vercel sem misturar seus arquivos com o projeto Android/Termux.
 
-        │ Wi-Fi / LAN
-        ▼
+## ✧ NOX Web
 
-💻 NOX Core
-├── 🧠 llama.cpp + Qwen
-├── 🛠️ comandos autorizados
-├── 🎙️ STT quando executado no Termux
-└── 🌐 API HTTP
-```
+<p align="center">
+  <img src="https://img.shields.io/badge/Interface-Web-0f766e?style=for-the-badge" alt="Interface Web">
+  <img src="https://img.shields.io/badge/IA-Google%20Gemini-4285F4?style=for-the-badge" alt="Google Gemini">
+  <img src="https://img.shields.io/badge/Deploy-Vercel-black?style=for-the-badge" alt="Vercel">
+</p>
 
-O navegador deixa de ser a interface principal do aplicativo Android nativo, mas agora existe também uma versão web dedicada na raiz do repositório. A pasta `android/` continua preservada.
+### Recursos
 
-## Recursos
+- Interface responsiva para celular e desktop.
+- Conversa com Gemini por função serverless; a chave fica no servidor.
+- Entrada por voz e leitura em voz alta, quando disponíveis no navegador.
+- Histórico e memórias guardados localmente no navegador.
+- Opções para limpar e exportar a conversa e apagar memórias.
 
-### Evolução 1.2
+### Publicar na Vercel
 
-- personalidade determinística para identidade, criador, saudações e agradecimentos;
-- chat geral com respostas mais completas e naturais;
-- histórico curto de conversa para manter referências entre mensagens;
-- busca online automática para perguntas atuais, com timeout e contexto enviado ao Qwen;
-- estado facial `SURPRISED` adicionado ao Android;
-- endpoint `GET /api/capabilities` para descoberta das capacidades do Core;
-- status do Core com versão do Node, plataforma, arquitetura, uptime e quantidade de memórias;
-- ferramentas adicionais para Node.js, plataforma, hora, Git remoto e informações do projeto;
-- base preparada para evoluir comandos em módulos de habilidades (skills), mantendo a allowlist e a segurança.
+1. Importe o repositório `muzan204/nox` na Vercel.
+2. Em **Settings → Build and Deployment → Root Directory**, escolha **`site`**.
+3. Em **Settings → Environment Variables**, configure:
+   - `GEMINI_API_KEY` — chave privada criada no Google AI Studio.
+   - `GEMINI_MODEL` — opcional; padrão `gemini-2.5-flash`.
+4. Faça o deploy e teste as mensagens e os recursos de voz.
 
-- carinha nativa com estados IDLE, LISTENING, THINKING, SPEAKING, HAPPY, CONFUSED e ERROR;
-- toque na carinha para falar e resposta por TTS do Android;
-- toque longo para configurar o endereço do NOX Core;
-- conexão PC/Redmi por Wi-Fi/LAN;
-- memória persistente em SQLite com comandos explícitos "lembre que..." e "esqueça...";
-- contexto de memória autorizado enviado ao Qwen;
-- monitoramento de CPU, RAM, disco, rede, processos, uptime e hostname;
-- ferramentas de Git e descoberta de projetos;
-- abertura segura do VS Code, pasta do NOX e navegador;
-- ações perigosas separadas e protegidas por confirmação explícita;
-- ElevenLabs opcional no Core, com voz nativa como fallback;
-- comandos naturais com allowlist; comandos arbitrários de shell continuam bloqueados.
+> **Importante:** não coloque a chave Gemini no HTML, em variáveis públicas ou no GitHub. O site não exige login; qualquer pessoa com o endereço pode consumir a quota da API. Configure quotas e alertas antes de divulgar o endereço. O limitador atual é básico e não substitui proteção distribuída.
 
-## Android
+Guia completo: [`site/README.md`](site/README.md).
 
-Projeto em `android/`.
+## ✧ NOX Local — Android e Termux
 
-Com Gradle instalado:
+A versão local permanece no repositório. Ela não é necessária para publicar o site na Vercel.
 
-```bash
-cd ~/nox/android
-gradle :app:assembleDebug
+### Arquitetura
+
+```text
+NOX Android
+├── Interface nativa
+├── Microfone e voz do Android
+└── Conexão opcional com o Core
+          │ Wi-Fi / LAN
+          ▼
+NOX Core (Termux / computador)
+├── API HTTP
+├── Memória persistente SQLite
+├── Ferramentas autorizadas
+└── llama.cpp + modelo local (quando configurado)
 ```
 
-APK:
-
-```
-android/app/build/outputs/apk/debug/app-debug.apk
-```
-
-No primeiro uso, conceda acesso ao microfone.
-
-### Conectar ao PC
-
-Na tela do NOX, mantenha a carinha pressionada por aproximadamente 1 segundo para abrir a configuração do Core.
-
-Informe, por exemplo:
-
-```
-http://192.168.1.10:8765
-```
-
-O PC e o Redmi precisam estar na mesma rede. O Core deve escutar em `0.0.0.0:8765`.
-
-**Não exponha essa porta diretamente à internet.** Use apenas rede local ou uma camada autenticada/VPN.
-
-## Core Termux
+### Iniciar o Core no Termux
 
 ```bash
 chmod +x ~/nox/scripts/*.sh
 ~/nox/scripts/start.sh
 ```
 
-Verificação:
+Verificar se está respondendo:
 
 ```bash
 curl -s http://127.0.0.1:8765/api/health
 curl -s http://127.0.0.1:8765/api/status
 ```
 
-## Comandos naturais
+### Compilar o Android
 
-O NOX reconhece frases em português e executa apenas ferramentas autorizadas. Exemplos:
+Com o ambiente Android/Gradle configurado:
 
-```
-"quanto de RAM eu tenho?"
-"qual a CPU?"
-"qual o IP do computador?"
-"mostre os processos"
-"liste meus projetos"
-"qual a branch atual?"
-"abra o VS Code"
-"lembre que meu projeto principal é o NOX"
-"o que você lembra?"
-"esqueça meu projeto principal"
+```bash
+cd ~/nox/android
+gradle :app:assembleDebug
 ```
 
-Ações como desligar ou reiniciar **nunca são executadas imediatamente**. O NOX pede uma confirmação explícita.
+O projeto Android está em `android/`. A versão web está em `site/`; as duas partes não precisam ser publicadas juntas.
 
-## Memória local
+**Segurança:** não exponha a API do Core diretamente à internet. Use uma rede local confiável ou uma camada de acesso segura.
 
-A memória do Core usa SQLite e só recebe informações quando o usuário pede explicitamente para lembrar. APIs existentes:
+## ✧ Estrutura do repositório
 
-```
-GET  /api/memory
-GET  /api/memory?q=projeto
-POST /api/memory
-```
-
-Na versão web, histórico e memórias ficam no armazenamento local do navegador e não sincronizam entre dispositivos. As memórias web são enviadas ao provedor de IA junto com a mensagem; não salve informações secretas ou sensíveis.
-
-## Voz
-
-Configure no arquivo `config/.env` para a voz ElevenLabs do Core:
-
-```
-ELEVENLABS_API_KEY=...
-ELEVENLABS_VOICE_ID=...
-ELEVENLABS_MODEL_ID=eleven_multilingual_v2
-```
-
-O Core expõe `/api/voice` para a UI web antiga `ui/face.html`. O aplicativo Android usa a voz nativa do Android (TextToSpeech) como caminho principal. A nova versão web usa as APIs de voz disponíveis no navegador.
-
-## Estrutura
-
-```
+```text
 nox/
-├── ai/
-├── android/
-├── api/           # funções serverless da versão web
-├── config/
-├── core/
-│   └── server/
-├── memory/
-├── scripts/
-├── ui/            # interface legada/fallback do Core
-├── index.html     # nova interface web
-├── vercel.json
-└── NOX-WEB.md
+├── site/                   # Aplicação web pronta para configurar na Vercel
+│   ├── api/chat.js          # Endpoint serverless Gemini
+│   ├── index.html           # Interface web
+│   ├── vercel.json          # Cabeçalhos de segurança e configuração
+│   └── README.md            # Guia de deploy da versão web
+├── android/                # Aplicativo Android nativo
+├── core/server/             # API e lógica do Core local
+├── config/                  # Configuração e exemplo de ambiente
+├── scripts/                 # Inicialização e utilitários Termux
+├── ui/                      # Interface auxiliar/legada do Core
+├── voice/                   # Recursos de voz do Core
+└── README.md                # Documentação principal
 ```
 
-## Status
+## ✦ Status
 
-**NOX 1.3 — Core local + versão web em desenvolvimento**
+- [x] Interface web separada em `site/`
+- [x] Endpoint Gemini movido para `site/api/chat.js`
+- [x] Configuração Vercel dentro de `site/`
+- [x] Documentação principal reorganizada
+- [ ] Configurar `GEMINI_API_KEY` na Vercel
+- [ ] Fazer deploy real e testar no navegador
 
-A camada Android, conexão Core/PC, voz, palavra-chave e comandos seguros continuam preservados. A versão web foi adicionada em uma branch de implementação e ainda precisa de configuração das variáveis e validação em deployment Vercel antes de ser considerada pronta para uso.
+O deploy ainda precisa ser executado e validado. O código no GitHub, por si só, não significa que o site já esteja online.
+
+---
+
+<p align="center"><sub>NOX · Feito para evoluir, do celular à nuvem.</sub></p>
