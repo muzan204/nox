@@ -4,14 +4,14 @@ Assistente pessoal local para Android/Termux, com carinha nativa, voz, memória 
 
 ## Web (nova etapa)
 
-O projeto também inclui uma interface para navegador, otimizada para celular, com IA online, voz do navegador, histórico e memórias locais e login protegido.
+O projeto inclui uma interface para navegador, otimizada para celular, com IA online Gemini, voz do navegador, histórico e memórias locais. A versão web é aberta, sem senha ou sessão; qualquer pessoa com o endereço pode usar a API e consumir a quota de IA.
 
 - Interface: `index.html`
-- Funções de sessão e IA: `api/session.js`, `api/chat.js`
+- Função de IA: `api/chat.js`
 - Cabeçalhos de segurança: `vercel.json`
-- Instruções e variáveis de ambiente: [NOX-WEB.md](NOX-WEB.md)
+- Instruções: [NOX-WEB.md](NOX-WEB.md)
 
-A versão web é independente do Core local: ela não executa comandos do Android/Termux e não usa automaticamente o modelo Qwen local. Configure as variáveis de ambiente necessárias na Vercel antes de testar. Não considere o site operacional até validar um deployment e a chave do provedor.
+Configure `GEMINI_API_KEY` como variável privada na Vercel; opcionalmente defina `GEMINI_MODEL`. Nunca publique a chave no código. A versão web não executa comandos do Android/Termux e não usa automaticamente o modelo Qwen local. O deploy e os testes reais ainda precisam ser verificados.
 
 ## Arquitetura local
 
