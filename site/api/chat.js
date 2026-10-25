@@ -82,8 +82,10 @@ module.exports = async function chat(req, res) {
   }
 
   const model = (process.env.QWEN_MODEL || "qwen3.8-27b").trim();
-  const endpoint = (process.env.QWEN_API_URL || "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions").trim();
-  if (!/^qwen3\.8-27b$/.test(model) && !/^[a-zA-Z0-9._/-]{1,120}$/.test(model)) {
+  // Aceita tanto a URL base quanto uma URL que já termine em /chat/completions.
+  const endpoint = (process.env.QWEN_API_URL || "https://dashscope-intl.aliyuncs.com/compatible-mode/v1")
+    .trim().replace(/\/+$/, "").replace(/\/chat\/completions$/, "");
+  if (!/^[a-zA-Z0-9._/-]{1,120}$/.test(model)) {
     return send(res, 500, { error: "QWEN_MODEL inválido." });
   }
   let parsedEndpoint;
@@ -94,7 +96,7 @@ module.exports = async function chat(req, res) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 45000);
   try {
-    const upstream = await fetch(endpoint.replace(/\/$/, "") + "/chat/completions", {
+    const upstream = await fetch(endpoint + "/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": "Bearer " + apiKey,
@@ -112,10 +114,10 @@ module.exports = async function chat(req, res) {
     const data = await upstream.json().catch(() => ({}));
     if (!upstream.ok) {
       if (upstream.status === 401 || upstream.status === 403) {
-        return send(res, 502, { error: "A chave do provedor foi recusada. Confira DASHSCOPE_API_KEY e a região da chave." });
+        return send(res, 502, { error: "A chave do provedor foi recusada. Confira DASHSCOPE_API_KEY e se ela pertence à região internacional (Singapura)." });
       }
-      if (upstream.status === 429) return send(res, 429, { error: "Limite de uso da IA atingido. Aguarde e tente novamente." });
-      return send(res, 502, { error: "O provedor Qwen não conseguiu responder. Confira a chave, o saldo e o nome do modelo." });
+      if (upstream.status === 429) return send(res, 429, { error: "Limite ou cota gratuita do Qwen atingido. Confira a cota do modelo no Alibaba Cloud Model Studio e tente novamente quando houver saldo gratuito." });
+      return send(res, 502, { error: "O provedor Qwen não conseguiu responder. Confira a chave, a cota e o nome do modelo." });
     }
     const reply = data.choices && data.choices[0] && data.choices[0].message
       ? String(data.choices[0].message.content || "").trim()
