@@ -23,9 +23,21 @@ Interface de voz e chat do NOX, preparada para deploy na Vercel com o diretório
 
 Não coloque a chave no HTML, em variáveis públicas, nem no GitHub. Nunca compartilhe sua chave. Depois de alterar variáveis, faça novo deploy.
 
-## Custos
+## Cota gratuita do Qwen
 
-O Qwen3.8-27B pela API na nuvem não é garantidamente gratuito. O preço depende do provedor, da região e dos tokens usados. Confira a tabela oficial atual antes de usar: https://www.alibabacloud.com/help/en/model-studio/qwen3-8-27b. Configure alertas/limites de gasto e não divulgue o endereço publicamente sem proteção adicional.
+A documentação atual do Alibaba Cloud lista cota gratuita de teste para novos usuários elegíveis em Singapore com escopo International, inclusive para alguns modelos Qwen. A disponibilidade, quantidade e validade dependem do modelo e da conta; confirme no console se `qwen3.8-27b` mostra cota gratuita antes de usar.
+
+1. Abra o [Alibaba Cloud Model Studio](https://modelstudio.console.alibabacloud.com/) e conclua a configuração da conta.
+2. Selecione **Singapore** e crie uma chave de API para o serviço internacional.
+3. Na página de cota/uso do modelo, confirme a cota de `qwen3.8-27b`.
+4. Ative **Free Quota Only**, se disponível, para que as chamadas parem quando a cota gratuita acabar, em vez de continuar com cobrança por uso.
+5. Na Vercel, configure a chave apenas como variável privada `DASHSCOPE_API_KEY`.
+
+Documentação oficial:
+- [Cota gratuita para novos usuários](https://www.alibabacloud.com/help/en/model-studio/new-free-quota)
+- [Preços e cota por modelo](https://www.alibabacloud.com/help/en/model-studio/model-pricing)
+
+A cota não é ilimitada e pode expirar. Não use a API até confirmar a cota e ativar a proteção contra cobrança no painel, quando disponível. O código do NOX não consegue ativar essa opção por você.
 
 ## Privacidade e segurança
 
