@@ -1,43 +1,59 @@
-# NOX Web
+# NOX Web — Qwen3.8-27B
 
-Interface web do NOX, preparada para deploy na Vercel com diretório raiz `site/`.
+Interface de voz e chat do NOX, preparada para deploy na Vercel com o diretório raiz site/.
 
-## O que inclui
+## Recursos
 
-- Interface responsiva com identidade visual escura verde/aqua.
-- Chat com Google Gemini via função serverless.
-- Entrada por voz e leitura em voz alta, quando suportadas pelo navegador.
-- Histórico e memórias locais no navegador.
-- Cabeçalhos de segurança, validação de entrada e timeout.
+- Rosto digital com olhos e boca ciano animada em fundo preto.
+- Conversa em português com Qwen3.8-27B hospedado na nuvem.
+- Reconhecimento de fala e leitura em voz alta quando suportados pelo navegador.
+- Histórico recente no navegador; até 12 mensagens são enviadas por requisição.
+- Chave da API guardada somente em variável privada no servidor.
+- Validação de entrada, timeout, cabeçalhos de segurança e limite básico de requisições.
 
-## Deploy na Vercel
+## Configuração da Vercel
 
-1. Importe o repositório `muzan204/nox`.
-2. Em **Settings → Build and Deployment → Root Directory**, selecione `site`.
-3. Em **Settings → Environment Variables**, adicione:
-   - `GEMINI_API_KEY`: sua chave privada do Google AI Studio.
-   - `GEMINI_MODEL`: opcional; padrão `gemini-2.5-flash`.
-4. Faça o deploy e teste o chat e os recursos de voz no endereço publicado.
+1. Importe muzan204/nox na Vercel.
+2. Em **Settings → Build and Deployment → Root Directory**, defina **site**.
+3. Em **Settings → Environment Variables**, crie:
+   - **DASHSCOPE_API_KEY**: chave privada da Alibaba Cloud Model Studio (região internacional).
+   - **QWEN_MODEL**: opcional; padrão qwen3.8-27b.
+   - **QWEN_API_URL**: opcional; padrão https://dashscope-intl.aliyuncs.com/compatible-mode/v1.
+4. Faça um novo deploy e teste o chat e o microfone.
 
-Não coloque a chave no HTML, no GitHub ou em variáveis públicas. Após alterar variáveis, faça um novo deploy.
+Não coloque a chave no HTML, em variáveis públicas, nem no GitHub. Nunca compartilhe sua chave. Depois de alterar variáveis, faça novo deploy.
 
-## Estrutura
+## Cota gratuita do Qwen
 
-```
-site/
-├── api/
-│   └── chat.js
-├── index.html
-├── vercel.json
-└── README.md
-```
+A documentação atual do Alibaba Cloud lista cota gratuita de teste para novos usuários elegíveis em Singapore com escopo International, inclusive para alguns modelos Qwen. A disponibilidade, quantidade e validade dependem do modelo e da conta; confirme no console se `qwen3.8-27b` mostra cota gratuita antes de usar.
 
-## Privacidade e custos
+1. Abra o [Alibaba Cloud Model Studio](https://modelstudio.console.alibabacloud.com/) e conclua a configuração da conta.
+2. Selecione **Singapore** e crie uma chave de API para o serviço internacional.
+3. Na página de cota/uso do modelo, confirme a cota de `qwen3.8-27b`.
+4. Ative **Free Quota Only**, se disponível, para que as chamadas parem quando a cota gratuita acabar, em vez de continuar com cobrança por uso.
+5. Na Vercel, configure a chave apenas como variável privada `DASHSCOPE_API_KEY`.
 
-O site não exige login. Qualquer pessoa que tenha o endereço pode usar o endpoint e consumir a quota/custo associado à chave Gemini. Configure quotas e alertas no Google AI Studio/Google Cloud antes de divulgar o site. O limitador em memória é básico e não substitui proteção distribuída.
+Documentação oficial:
+- [Cota gratuita para novos usuários](https://www.alibabacloud.com/help/en/model-studio/new-free-quota)
+- [Preços e cota por modelo](https://www.alibabacloud.com/help/en/model-studio/model-pricing)
 
-O histórico e as memórias são guardados no armazenamento local deste navegador. As memórias escolhidas são enviadas à IA junto com a mensagem; não guarde informações secretas ou sensíveis.
+A cota não é ilimitada e pode expirar. Não use a API até confirmar a cota e ativar a proteção contra cobrança no painel, quando disponível. O código do NOX não consegue ativar essa opção por você.
 
-## Limites
+## Privacidade e segurança
 
-A versão web não executa comandos do Android/Termux e não usa automaticamente o modelo Qwen local. Voz depende das APIs disponíveis no navegador e pode variar entre dispositivos.
+- O navegador envia as mensagens recentes para a API da nuvem para obter respostas.
+- O histórico fica no armazenamento local deste navegador. Use **Limpar conversa** para apagá-lo.
+- Não guarde senhas, chaves, dados financeiros ou outras informações sensíveis no chat.
+- O endpoint verifica a origem e possui um limitador simples por instância; isso não substitui autenticação nem rate limiting distribuído. Antes de abrir o site ao público, adicione uma camada de proteção e limites no provedor.
+- O microfone e a voz dependem do navegador, de permissões e de HTTPS. O NOX não escuta continuamente em segundo plano.
+- O site não executa comandos do Android/Termux nem acessa arquivos locais.
+
+## Arquivos
+
+- site/index.html — interface e lógica de voz.
+- site/api/chat.js — proxy serverless para o Qwen.
+- site/vercel.json — cabeçalhos de segurança.
+
+## Desenvolvimento local
+
+A função site/api/chat.js usa o runtime de funções da Vercel. Para testar localmente, instale a Vercel CLI e execute vercel dev dentro de site/. Configure DASHSCOPE_API_KEY no ambiente local sem adicionar o valor ao repositório.
