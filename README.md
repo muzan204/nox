@@ -5,21 +5,23 @@ Android · Termux · Vercel · Qwen3.8-27B
 
 ## NOX Web
 
-A aplicação web fica em site/ e pode ser publicada na Vercel. A interface apresenta dois olhos ciano e boca animada sobre fundo preto, com entrada por voz, chat e leitura das respostas em voz alta quando o navegador oferece suporte.
+A aplicação web fica em `site/` e pode ser publicada na Vercel. A interface apresenta dois olhos ciano e boca animada sobre fundo preto, com entrada por voz, chat e leitura das respostas em voz alta quando o navegador oferece suporte.
 
 ### Publicar na Vercel
 
-1. Importe o repositório muzan204/nox.
+1. Importe o repositório `muzan204/nox`.
 2. Defina **Root Directory** como **site**.
-3. Em **Settings → Environment Variables**, configure:
-   - **DASHSCOPE_API_KEY** — chave privada da Alibaba Cloud Model Studio (região internacional).
-   - **QWEN_MODEL** — opcional; padrão qwen3.8-27b.
-   - **QWEN_API_URL** — opcional; padrão https://dashscope-intl.aliyuncs.com/compatible-mode/v1.
-4. Faça o deploy e teste as mensagens e o microfone em HTTPS.
+3. Crie uma chave de API no Alibaba Cloud Model Studio para a região **Singapore / International** e confira se existe cota gratuita disponível para `qwen3.8-27b`.
+4. Ative **Free Quota Only** no painel do provedor, se estiver disponível, para que as chamadas parem ao esgotar a cota gratuita.
+5. Em **Settings → Environment Variables**, configure:
+   - **DASHSCOPE_API_KEY** — chave privada.
+   - **QWEN_MODEL** — opcional; padrão `qwen3.8-27b`.
+   - **QWEN_API_URL** — opcional; padrão `https://dashscope-intl.aliyuncs.com/compatible-mode/v1`.
+6. Faça o deploy e teste as mensagens e o microfone em HTTPS.
 
-**Atenção:** o Qwen na nuvem pode gerar cobrança por tokens. Confira os preços e limites do provedor antes de usar. Nunca salve a chave no HTML ou no GitHub. O site não tem autenticação por padrão; antes de divulgar o endereço, adicione proteção contra uso não autorizado.
+**Atenção:** a cota gratuita é limitada e depende das regras do provedor; não é uso grátis ilimitado. Confirme a cota e a proteção contra cobrança no painel antes de testar. Nunca salve a chave no HTML ou no GitHub. O site não tem autenticação por padrão; antes de divulgar o endereço, adicione proteção contra uso não autorizado.
 
-Guia da versão web: site/README.md.
+Guia da versão web: `site/README.md`.
 
 ## NOX Local — Android e Termux
 
@@ -50,7 +52,8 @@ Não exponha o Core do Termux diretamente à internet.
 - [x] Interface web com olhos e boca neon.
 - [x] Integração serverless com Qwen3.8-27B.
 - [x] Entrada por voz e fala sintetizada, quando suportadas.
-- [ ] Configurar DASHSCOPE_API_KEY na Vercel.
+- [ ] Criar chave privada e configurar a cota gratuita na Alibaba Cloud Model Studio.
+- [ ] Configurar `DASHSCOPE_API_KEY` na Vercel.
 - [ ] Fazer deploy e testar com uma chave válida.
 
 O código no GitHub não significa que o deploy já foi executado ou validado.
