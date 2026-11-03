@@ -771,6 +771,21 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === "POST" && url.pathname === "/api/knowledge") {
+      const body = await readBody(req);
+      if (String(body.action || "").toLowerCase() === "forget") {
+        try {
+          const removed = memory.forgetKnowledge(body.query);
+          json(res, 200, { ok: true, removed });
+        } catch (error) {
+          json(res, 400, { ok: false, error: error.message });
+        }
+        return;
+      }
+      json(res, 400, { ok: false, error: "Ação de conhecimento inválida." });
+      return;
+    }
+
     // --------------------------------------------------------
     // MEMORY
     // --------------------------------------------------------
