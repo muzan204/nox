@@ -31,6 +31,7 @@ jobs:
           node --check core/server/server.js
           node --check core/server/lan-gateway.js
           node --check core/server/memory.js
+          node --check core/server/web-learning.js
       - name: Check Termux shell scripts
         run: |
           bash -n scripts/start.sh
