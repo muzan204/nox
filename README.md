@@ -1,4 +1,4 @@
-# ◉ NOX 3.0
+# ◉ NOX 3.1
 
 **Assistente pessoal local por voz, com dois celulares conectados pela rede Wi-Fi.**
 
@@ -59,7 +59,18 @@ O token é local e não é uma API key. NVIDIA/cloud é opcional e não é neces
 
 - `GET /api/device-status` (autenticado): RAM, CPU, uptime, IPs e número de clientes WebSocket.
 - WebSocket `/ws` (autenticado): snapshot de estado facial e status do Core a cada 2,5 segundos.
-- Core SQLite: memórias persistentes em `memory/nox.db`.
+- Core SQLite: memórias pessoais e conhecimento web com fontes em `memory/nox.db`.
+
+## Aprendizado contínuo com a internet
+
+O NOX 3.1 pode pesquisar tópicos configurados automaticamente e guardar conteúdo textual com URL e data de consulta no SQLite. A cada seis horas, por padrão, ele pesquisa até dois tópicos; o primeiro ciclo começa um minuto depois da inicialização. O limite padrão é de 150 páginas, até dois resultados por tópico e 4.200 caracteres por página.
+
+A configuração fica em `config/nox.config.json`, na seção `webLearning`. O Redmi 15C precisa estar conectado à internet. O aprendizado é recuperação de informação (RAG): o Qwen não altera seus pesos nem se retreina automaticamente. O conteúdo externo é tratado como dado não confiável e deve ser conferido nas fontes antes de decisões importantes.
+
+Rotas autenticadas no gateway:
+- `GET /api/learning`: estado do aprendizado e data do último ciclo.
+- `POST /api/learning/run`: solicita um ciclo manual.
+- `GET /api/knowledge?q=termo`: consulta o conhecimento salvo.
 
 ## Segurança
 
