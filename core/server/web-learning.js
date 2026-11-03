@@ -39,9 +39,9 @@ function safeHttpsUrl(raw) {
     if (url.protocol !== "https:") return null;
     if (!url.hostname || url.username || url.password) return null;
     const host = url.hostname.toLowerCase();
+    const normalizedHost = host.replace(/^\\[|\\]$/g, "");
+    if (net.isIP(normalizedHost)) return null;
     if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local")) return null;
-    if (/^(127\.|10\.|192\.168\.|169\.254\.)/.test(host) || host === "::1") return null;
-    if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return null;
     url.hash = "";
     return url;
   } catch {
