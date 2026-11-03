@@ -1,0 +1,38 @@
+name: NOX Core checks
+
+on:
+  pull_request:
+    paths:
+      - "core/server/**"
+      - "scripts/**"
+      - "config/**"
+      - ".github/workflows/nox-core.yml"
+  push:
+    branches: [main]
+    paths:
+      - "core/server/**"
+      - "scripts/**"
+      - "config/**"
+      - ".github/workflows/nox-core.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Check Node.js syntax
+        run: |
+          node --check core/server/server.js
+          node --check core/server/lan-gateway.js
+          node --check core/server/memory.js
+      - name: Check Termux shell scripts
+        run: |
+          bash -n scripts/start.sh
+          bash -n scripts/stop.sh
+          bash -n scripts/termux-boot.sh
