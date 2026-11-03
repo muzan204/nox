@@ -1,5 +1,6 @@
 # Segredos
 config/.env
+config/*.token
 *.key
 *.pem
 

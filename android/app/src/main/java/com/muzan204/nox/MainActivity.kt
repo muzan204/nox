@@ -17,15 +17,24 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import org.json.JSONObject
 
 class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     private lateinit var face: NoxFaceView
@@ -33,13 +42,20 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     private var speechRecognizer: SpeechRecognizer? = null
     private var tts: TextToSpeech? = null
     private val handler = Handler(Looper.getMainLooper())
+    private val httpClient = OkHttpClient.Builder()
+        .readTimeout(0, TimeUnit.MILLISECONDS)
+        .build()
+    private var webSocket: WebSocket? = null
+    private var reconnectDelayMs = 2000L
+    private var reconnectScheduled = false
 
     private val serverUrl: String
-        get() = prefs.getString("server_url", "http://127.0.0.1:8765")!!.trimEnd('/')
+        get() = prefs.getString("server_url", "")!!.trimEnd("/")
+    private val deviceToken: String
+        get() = prefs.getString("device_token", "")!!
 
     private val wakeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            // Mesmo caminho do toque na carinha: dizer "NOX" liga o microfone.
             startListening()
         }
     }
@@ -53,11 +69,16 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
 
         window.statusBarColor = Color.rgb(5, 7, 13)
         window.navigationBarColor = Color.rgb(5, 7, 13)
-
         tts = TextToSpeech(this, this)
-
         requestNeededPermissions()
-        pollState()
+
+        if (serverUrl.isBlank() || deviceToken.isBlank()) {
+            face.state = "CONFUSED"
+            handler.postDelayed({ if (!isFinishing) showServerConfig() }, 500)
+        } else {
+            connectGateway()
+            pollState()
+        }
     }
 
     override fun onStart() {
@@ -78,32 +99,21 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
 
     private fun requestNeededPermissions() {
         val needed = mutableListOf<String>()
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED
-        ) needed += Manifest.permission.RECORD_AUDIO
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-            != PackageManager.PERMISSION_GRANTED
-        ) needed += Manifest.permission.POST_NOTIFICATIONS
-
-        if (needed.isEmpty()) {
-            startWakeService()
-        } else {
-            ActivityCompat.requestPermissions(this, needed.toTypedArray(), 10)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            needed += Manifest.permission.RECORD_AUDIO
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            needed += Manifest.permission.POST_NOTIFICATIONS
+        }
+        if (needed.isEmpty()) startWakeService()
+        else ActivityCompat.requestPermissions(this, needed.toTypedArray(), 10)
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 10 &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
-        ) {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
             startWakeService()
         }
     }
@@ -125,20 +135,20 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun startListening() {
+        if (serverUrl.isBlank() || deviceToken.isBlank()) {
+            showServerConfig()
+            return
+        }
         if (!SpeechRecognizer.isRecognitionAvailable(this)) {
             toast("Reconhecimento de voz indisponível.")
             return
         }
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             requestNeededPermissions()
             return
         }
 
-        // Evita que o serviço de wake word dispute o microfone com este reconhecimento.
         pauseWakeService()
-
         speechRecognizer?.destroy()
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
         speechRecognizer!!.setRecognitionListener(object : RecognitionListener {
@@ -155,12 +165,8 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             }
             override fun onResults(results: Bundle?) {
                 resumeWakeService()
-                val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
-                if (!text.isNullOrBlank()) {
-                    sendMessage(text)
-                } else {
-                    face.state = "IDLE"
-                }
+                val recognized = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
+                if (!recognized.isNullOrBlank()) sendMessage(recognized) else face.state = "IDLE"
             }
             override fun onPartialResults(partialResults: Bundle?) {}
             override fun onEvent(eventType: Int, params: Bundle?) {}
@@ -172,7 +178,6 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
             putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
         }
-
         face.state = "LISTENING"
         speechRecognizer!!.startListening(intent)
     }
@@ -181,32 +186,29 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         face.state = "THINKING"
         thread {
             try {
-                val connection = URL("$serverUrl/api/chat").openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.connectTimeout = 5000
-                connection.readTimeout = 60000
-                connection.doOutput = true
-                connection.setRequestProperty("Content-Type", "application/json; charset=utf-8")
-
+                val connection = (URL("$serverUrl/api/chat").openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    connectTimeout = 5000
+                    readTimeout = 90000
+                    doOutput = true
+                    setRequestProperty("Content-Type", "application/json; charset=utf-8")
+                    setRequestProperty("X-NOX-Token", deviceToken)
+                }
                 val body = JSONObject().put("message", message).toString()
                 connection.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
-
-                // Em respostas de erro (4xx/5xx) o corpo JSON vem no errorStream, não no
-                // inputStream — ler o inputStream nesse caso derruba uma FileNotFoundException
-                // cuja mensagem é só a URL, escondendo o erro real do Core.
                 val ok = connection.responseCode in 200..299
                 val stream = if (ok) connection.inputStream else connection.errorStream
-                val text = stream?.bufferedReader()?.use { it.readText() } ?: ""
-                val json = JSONObject(text)
+                val raw = stream?.bufferedReader()?.use { it.readText() } ?: ""
+                val json = JSONObject(raw)
                 if (!json.optBoolean("ok", false)) {
                     throw Exception(json.optString("error", "Erro no NOX (HTTP ${connection.responseCode})."))
                 }
-
                 val answer = json.optString("text", "Não recebi uma resposta.")
                 runOnUiThread {
                     face.state = "SPEAKING"
                     speak(answer)
                 }
+                connection.disconnect()
             } catch (error: Exception) {
                 runOnUiThread {
                     face.state = "ERROR"
@@ -215,6 +217,119 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                 }
             }
         }
+    }
+
+    private fun connectGateway() {
+        if (serverUrl.isBlank() || deviceToken.isBlank()) return
+        webSocket?.cancel()
+        val wsUrl = serverUrl.replaceFirst("https://", "wss://").replaceFirst("http://", "ws://") + "/ws"
+        val request = Request.Builder().url(wsUrl).header("X-NOX-Token", deviceToken).build()
+        webSocket = httpClient.newWebSocket(request, object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                reconnectDelayMs = 2000L
+                reconnectScheduled = false
+                runOnUiThread {
+                    face.statusText = "CONECTADO • recebendo monitoramento"
+                    if (face.state == "ERROR") face.state = "IDLE"
+                }
+            }
+
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                try {
+                    val data = JSONObject(text)
+                    if (data.optString("type") == "snapshot") {
+                        val state = data.optString("faceState", "IDLE")
+                        val device = data.optJSONObject("device")
+                        val memory = device?.optJSONObject("memory")
+                        val ram = memory?.optInt("usedPercent", -1) ?: -1
+                        val load = device?.optJSONArray("loadAverage")?.optDouble(0, 0.0) ?: 0.0
+                        val wifi = device?.optJSONArray("network")?.length()?.let { it > 0 } ?: false
+                        val status = if (ram >= 0) "ONLINE • RAM ${ram}% • CPU ${"%.1f".format(Locale.US, load)} • ${if (wifi) "Wi-Fi" else "LAN"}" else "ONLINE • servidor conectado"
+                        runOnUiThread {
+                            face.statusText = status
+                            if (face.state != "SPEAKING" && face.state != "LISTENING") face.state = state
+                        }
+                    }
+                } catch (_: Exception) {}
+            }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                runOnUiThread { face.statusText = "SEM CONEXÃO • tentando reconectar" }
+                scheduleReconnect()
+            }
+
+            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                scheduleReconnect()
+            }
+        })
+    }
+
+    private fun scheduleReconnect() {
+        if (reconnectScheduled || isFinishing) return
+        reconnectScheduled = true
+        handler.postDelayed({
+            reconnectScheduled = false
+            connectGateway()
+            reconnectDelayMs = (reconnectDelayMs * 2).coerceAtMost(30000L)
+        }, reconnectDelayMs)
+    }
+
+    private fun pollState() {
+        if (serverUrl.isNotBlank() && deviceToken.isNotBlank()) {
+            thread {
+                try {
+                    val connection = (URL("$serverUrl/api/face-state").openConnection() as HttpURLConnection).apply {
+                        connectTimeout = 2000
+                        readTimeout = 2000
+                        setRequestProperty("X-NOX-Token", deviceToken)
+                    }
+                    val json = JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
+                    val state = json.optString("state", "IDLE")
+                    runOnUiThread { if (face.state != "SPEAKING" && face.state != "LISTENING") face.state = state }
+                    connection.disconnect()
+                } catch (_: Exception) {}
+            }
+        }
+        handler.postDelayed({ pollState() }, 8000)
+    }
+
+    private fun showServerConfig() {
+        val urlInput = EditText(this).apply {
+            setText(serverUrl)
+            hint = "http://192.168.1.10:8766"
+            singleLine = true
+        }
+        val tokenInput = EditText(this).apply {
+            setText(deviceToken)
+            hint = "Token exibido em logs/gateway.log"
+            singleLine = true
+        }
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 8, 48, 0)
+            addView(urlInput)
+            addView(tokenInput)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Parear NOX com Redmi 15C")
+            .setMessage("No Redmi 15C, inicie o servidor e copie o endereço IP e o token de pareamento exibidos em ~/nox/logs/gateway.log. Os dois celulares devem estar na mesma rede Wi-Fi.")
+            .setView(layout)
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Conectar") { _, _ ->
+                val url = urlInput.text.toString().trim().trimEnd('/')
+                val token = tokenInput.text.toString().trim()
+                if ((url.startsWith("http://") || url.startsWith("https://")) && token.length >= 32) {
+                    prefs.edit().putString("server_url", url).putString("device_token", token).apply()
+                    webSocket?.cancel()
+                    connectGateway()
+                    pollState()
+                    toast("Configuração salva. Conectando ao NOX...")
+                } else {
+                    toast("Informe o endereço http(s) e o token completo.")
+                }
+            }
+            .show()
     }
 
     private fun speak(text: String) {
@@ -238,48 +353,14 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         }
     }
 
-    private fun pollState() {
-        thread {
-            try {
-                val connection = URL("$serverUrl/api/face-state").openConnection() as HttpURLConnection
-                connection.connectTimeout = 2000
-                connection.readTimeout = 2000
-                val json = JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
-                val state = json.optString("state", "IDLE")
-                runOnUiThread { if (face.state != "SPEAKING" && face.state != "LISTENING") face.state = state }
-            } catch (_: Exception) {}
-        }
-        handler.postDelayed({ pollState() }, 2500)
-    }
-
-    private fun showServerConfig() {
-        val input = android.widget.EditText(this)
-        input.setText(serverUrl)
-        input.hint = "http://192.168.1.10:8765"
-
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Conectar NOX Core")
-            .setMessage("Use o endereço do PC na mesma rede Wi-Fi.")
-            .setView(input)
-            .setNegativeButton("Cancelar", null)
-            .setPositiveButton("Salvar") { _, _ ->
-                val value = input.text.toString().trim().trimEnd('/')
-                if (value.startsWith("http://") || value.startsWith("https://")) {
-                    prefs.edit().putString("server_url", value).apply()
-                    toast("Servidor salvo.")
-                } else {
-                    toast("Use http:// ou https://")
-                }
-            }
-            .show()
-    }
-
     private fun toast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
+        webSocket?.close(1000, "activity destroyed")
+        httpClient.dispatcher.executorService.shutdown()
         speechRecognizer?.destroy()
         tts?.stop()
         tts?.shutdown()
