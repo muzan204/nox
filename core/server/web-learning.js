@@ -1,5 +1,7 @@
 "use strict";
 
+const net = require("node:net");
+
 const DEFAULTS = {
   maxResultsPerQuery: 2,
   maxCharsPerPage: 4200,
