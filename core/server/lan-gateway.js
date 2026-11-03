@@ -156,8 +156,10 @@ function acceptWebSocket(req, socket, head) {
 
 const ALLOWED = new Set([
   "GET /api/health", "GET /api/status", "GET /api/capabilities",
-  "GET /api/memory", "GET /api/face-state", "GET /api/events",
-  "POST /api/chat", "POST /api/face-state", "POST /api/memory"
+  "GET /api/memory", "GET /api/knowledge", "GET /api/learning",
+  "GET /api/face-state", "GET /api/events",
+  "POST /api/chat", "POST /api/face-state", "POST /api/memory",
+  "POST /api/learning/run"
 ]);
 
 const server = http.createServer((req, res) => {
