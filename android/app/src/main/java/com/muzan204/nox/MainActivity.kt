@@ -302,7 +302,8 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         val tokenInput = EditText(this).apply {
             setText(deviceToken)
             hint = "Token exibido em logs/gateway.log"
-            singleLine = true
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            setSingleLine(true)
         }
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
