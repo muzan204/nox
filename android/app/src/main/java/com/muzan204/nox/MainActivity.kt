@@ -228,7 +228,10 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 reconnectDelayMs = 2000L
                 reconnectScheduled = false
-                runOnUiThread { if (face.state == "ERROR") face.state = "IDLE" }
+                runOnUiThread {
+                    face.statusText = "CONECTADO • recebendo monitoramento"
+                    if (face.state == "ERROR") face.state = "IDLE"
+                }
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
@@ -236,7 +239,13 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                     val data = JSONObject(text)
                     if (data.optString("type") == "snapshot") {
                         val state = data.optString("faceState", "IDLE")
+                        val device = data.optJSONObject("device")
+                        val memory = device?.optJSONObject("memory")
+                        val ram = memory?.optInt("usedPercent", -1) ?: -1
+                        val cores = device?.optInt("cpuCores", 0) ?: 0
+                        val status = if (ram >= 0) "ONLINE • RAM ${ram}% • ${cores} núcleos" else "ONLINE • servidor conectado"
                         runOnUiThread {
+                            face.statusText = status
                             if (face.state != "SPEAKING" && face.state != "LISTENING") face.state = state
                         }
                     }
@@ -244,6 +253,7 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                runOnUiThread { face.statusText = "SEM CONEXÃO • tentando reconectar" }
                 scheduleReconnect()
             }
 
