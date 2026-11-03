@@ -39,5 +39,22 @@
       "pwd",
       "git status"
     ]
+  },
+  "webLearning": {
+    "enabled": true,
+    "continuous": true,
+    "intervalMinutes": 360,
+    "startupDelaySeconds": 60,
+    "maxQueriesPerCycle": 2,
+    "maxResultsPerQuery": 2,
+    "maxCharsPerPage": 4200,
+    "maxPageBytes": 800000,
+    "timeoutMs": 7000,
+    "maxStoredItems": 150,
+    "topics": [
+      "inteligência artificial, tecnologia e novidades de computação",
+      "programação JavaScript, Node.js e desenvolvimento de software",
+      "ciência, educação e conhecimentos gerais"
+    ]
   }
 }
