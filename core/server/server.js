@@ -578,7 +578,7 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "1.3.0",
+        version: "3.0.0",
         faceState,
         time: new Date().toISOString()
       });
@@ -597,7 +597,7 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "1.3.0",
+        version: "3.0.0",
         faceState,
         chatBusy,
         voiceBusy,
@@ -641,11 +641,11 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "1.3.0",
+        version: "3.0.0",
         architecture: {
-          brain: "PC / llama.cpp + Qwen",
-          body: "Android / rosto + microfone + voz",
-          transport: "HTTP + SSE na rede local"
+          brain: "Redmi 15C / Termux + llama.cpp + Qwen local",
+          body: "Redmi 8 / Android + rosto + microfone + voz",
+          transport: "HTTP + WebSocket autenticados na rede local"
         },
         faceStates: Object.values(STATES),
         features: [
