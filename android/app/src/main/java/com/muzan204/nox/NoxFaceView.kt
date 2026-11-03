@@ -20,6 +20,12 @@ class NoxFaceView(context: Context) : View(context) {
             invalidate()
         }
 
+    var statusText: String = "Aguardando pareamento"
+        set(value) {
+            field = value
+            invalidate()
+        }
+
     var onLongPress: (() -> Unit)? = null
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -31,7 +37,6 @@ class NoxFaceView(context: Context) : View(context) {
     private val cyan = Color.rgb(34, 211, 238)
     private var animatedColor = cyan
 
-    // animações contínuas que dão vida à carinha
     private var breathe = 0f
     private var blinkAmt = 0f
     private var ringProgress = 0f
@@ -51,7 +56,6 @@ class NoxFaceView(context: Context) : View(context) {
 
     init {
         setBackgroundColor(Color.rgb(5, 7, 13))
-
         breatheAnim = ValueAnimator.ofFloat(0f, 1f, 0f).apply {
             duration = 3200; repeatCount = ValueAnimator.INFINITE; interpolator = LinearInterpolator()
             addUpdateListener { breathe = it.animatedValue as Float; if (state == "IDLE") invalidate() }
@@ -133,7 +137,6 @@ class NoxFaceView(context: Context) : View(context) {
 
         paint.color = color
         paint.style = Paint.Style.FILL
-
         val eyeY = cy - s * .55f
         val gap = s * 1.55f
         val eyeW = s * .95f
@@ -147,12 +150,10 @@ class NoxFaceView(context: Context) : View(context) {
         }
         val openness = 1f - blinkAmt * .9f
 
-        // olhos ovais — a mesma forma do ícone e da logo do NOX
         c.save()
         c.scale(1f, openness, cx - gap, eyeY)
         c.drawOval(cx - gap - eyeW, eyeY - eyeH, cx - gap + eyeW, eyeY + eyeH, paint)
         c.restore()
-
         c.save()
         c.scale(1f, openness, cx + gap, eyeY)
         c.drawOval(cx + gap - eyeW, eyeY - eyeH, cx + gap + eyeW, eyeY + eyeH, paint)
@@ -160,7 +161,6 @@ class NoxFaceView(context: Context) : View(context) {
 
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = s * .18f
-
         val mouth = RectF(cx - s * 1.45f, cy + s * .55f, cx + s * 1.45f, cy + s * 1.65f)
         when (state) {
             "SPEAKING" -> {
@@ -169,10 +169,7 @@ class NoxFaceView(context: Context) : View(context) {
                 val dy = (mouth.height() - h) / 2f
                 c.drawOval(RectF(mouth.left, mouth.top + dy, mouth.right, mouth.bottom - dy), paint)
             }
-            "SURPRISED" -> c.drawOval(
-                RectF(cx - s * .65f, cy + s * .72f, cx + s * .65f, cy + s * 1.72f),
-                paint
-            )
+            "SURPRISED" -> c.drawOval(RectF(cx - s * .65f, cy + s * .72f, cx + s * .65f, cy + s * 1.72f), paint)
             "ERROR" -> c.drawArc(mouth, 200f, 140f, false, paint)
             "THINKING" -> c.drawLine(cx - s * .7f, cy + s * 1.05f, cx + s * .7f, cy + s * 1.05f, paint)
             else -> c.drawArc(mouth, 20f, 140f, false, paint)
@@ -185,23 +182,20 @@ class NoxFaceView(context: Context) : View(context) {
 
         labels[state]?.let {
             labelPaint.textSize = s * .3f
-            labelPaint.color = Color.argb(
-                160,
-                (Color.red(color) + 220) / 2,
-                (Color.green(color) + 240) / 2,
-                (Color.blue(color) + 255) / 2
-            )
+            labelPaint.color = Color.argb(160, (Color.red(color) + 220) / 2, (Color.green(color) + 240) / 2, (Color.blue(color) + 255) / 2)
             c.drawText(it, cx, cy + s * 3.65f, labelPaint)
         }
+
+        labelPaint.textSize = s * .22f
+        labelPaint.color = Color.argb(190, 180, 220, 235)
+        c.drawText(statusText.take(64), cx, cy + s * 4.35f, labelPaint)
     }
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
         when (e.action) {
             MotionEvent.ACTION_DOWN -> {
                 downAt = System.currentTimeMillis()
-                postDelayed({
-                    if (downAt != 0L) onLongPress?.invoke()
-                }, 900)
+                postDelayed({ if (downAt != 0L) onLongPress?.invoke() }, 900)
                 return true
             }
             MotionEvent.ACTION_UP -> {
@@ -210,10 +204,7 @@ class NoxFaceView(context: Context) : View(context) {
                 if (duration < 900) performClick()
                 return true
             }
-            MotionEvent.ACTION_CANCEL -> {
-                downAt = 0L
-                return true
-            }
+            MotionEvent.ACTION_CANCEL -> { downAt = 0L; return true }
         }
         return true
     }
