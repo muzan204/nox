@@ -159,7 +159,7 @@ const ALLOWED = new Set([
   "GET /api/memory", "GET /api/knowledge", "GET /api/learning",
   "GET /api/face-state", "GET /api/events",
   "POST /api/chat", "POST /api/face-state", "POST /api/memory",
-  "POST /api/learning/run"
+  "POST /api/learning/run", "POST /api/knowledge"
 ]);
 
 const server = http.createServer((req, res) => {
