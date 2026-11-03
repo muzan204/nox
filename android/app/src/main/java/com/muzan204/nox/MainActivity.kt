@@ -106,28 +106,12 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             needed += Manifest.permission.POST_NOTIFICATIONS
         }
-        if (needed.isEmpty()) startWakeService()
-        else ActivityCompat.requestPermissions(this, needed.toTypedArray(), 10)
+        if (needed.isNotEmpty()) ActivityCompat.requestPermissions(this, needed.toTypedArray(), 10)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 10 &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            startWakeService()
-        }
-    }
-
-    private fun startWakeService() {
-        ContextCompat.startForegroundService(this, Intent(this, WakeWordService::class.java))
-    }
-
-    private fun pauseWakeService() {
-        startService(Intent(this, WakeWordService::class.java).setAction(WakeWordService.ACTION_PAUSE))
-    }
-
-    private fun resumeWakeService() {
-        startService(Intent(this, WakeWordService::class.java).setAction(WakeWordService.ACTION_RESUME))
+        // O serviço de palavra-chave fica desativado nesta versão de estabilidade.
     }
 
     fun onFaceTapped() {
@@ -148,7 +132,6 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             return
         }
 
-        pauseWakeService()
         speechRecognizer?.destroy()
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
         speechRecognizer!!.setRecognitionListener(object : RecognitionListener {
@@ -158,13 +141,11 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
             override fun onBufferReceived(buffer: ByteArray?) {}
             override fun onEndOfSpeech() { face.state = "THINKING" }
             override fun onError(error: Int) {
-                resumeWakeService()
                 face.state = "ERROR"
                 toast("Não consegui ouvir. Tente novamente.")
                 handler.postDelayed({ face.state = "IDLE" }, 1200)
             }
             override fun onResults(results: Bundle?) {
-                resumeWakeService()
                 val recognized = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
                 if (!recognized.isNullOrBlank()) sendMessage(recognized) else face.state = "IDLE"
             }
