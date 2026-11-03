@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
     private var reconnectScheduled = false
 
     private val serverUrl: String
-        get() = prefs.getString("server_url", "")!!.trimEnd("/")
+        get() = prefs.getString("server_url", "")!!.trimEnd('/')
     private val deviceToken: String
         get() = prefs.getString("device_token", "")!!
 
@@ -297,7 +297,7 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
         val urlInput = EditText(this).apply {
             setText(serverUrl)
             hint = "http://192.168.1.10:8766"
-            singleLine = true
+            setSingleLine(true)
         }
         val tokenInput = EditText(this).apply {
             setText(deviceToken)
