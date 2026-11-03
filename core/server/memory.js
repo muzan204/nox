@@ -126,6 +126,15 @@ function searchKnowledge(query = "", limit = 4) {
   return ranked.slice(0, Math.max(1, Math.min(10, Number(limit) || 4)));
 }
 
+function forgetKnowledge(query) {
+  const q = String(query || "").trim();
+  if (!q) throw new Error("Informe o título ou termo que deseja apagar.");
+  const result = getDb().prepare(
+    "DELETE FROM web_knowledge WHERE title LIKE ? OR topic LIKE ? OR url LIKE ? OR content LIKE ?"
+  ).run("%" + q + "%", "%" + q + "%", "%" + q + "%", "%" + q + "%");
+  return Number(result.changes);
+}
+
 function knowledgeStats() {
   const row = getDb().prepare("SELECT COUNT(*) AS total, MAX(fetched_at) AS lastFetched FROM web_knowledge").get();
   return { count: Number(row.total || 0), lastFetched: row.lastFetched || null };
@@ -137,5 +146,5 @@ function stats() {
 
 module.exports = {
   remember, search, forget, context, stats,
-  saveKnowledge, searchKnowledge, knowledgeStats
+  saveKnowledge, searchKnowledge, forgetKnowledge, knowledgeStats
 };
