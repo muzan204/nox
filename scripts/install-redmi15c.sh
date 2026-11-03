@@ -20,7 +20,7 @@ echo "=============================================="
 echo ""
 
 pkg update -y
-pkg install -y git cmake clang wget curl python
+pkg install -y git cmake clang wget curl python nodejs-lts termux-api
 
 termux-setup-storage || true
 
@@ -35,7 +35,7 @@ fi
 
 cd llama.cpp
 cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release -j4
+cmake --build build --config Release -j2
 
 echo "[2/4] Preparando modelo..."
 MODEL="qwen2.5-0.5b-instruct-q4_k_m.gguf"
@@ -48,7 +48,7 @@ else
 fi
 
 echo "[3/4] Instalando arquivos do NOX..."
-echo "Os arquivos desta pasta devem ser copiados pelo usuário para:"
+echo "Os arquivos do repositório devem estar instalados em $ROOT."
 echo "  $ROOT/config/nox.config.json"
 echo "  $ROOT/core/server/server.js"
 echo "  $ROOT/ui/face.html"
