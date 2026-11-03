@@ -215,7 +215,7 @@ server.listen(PORT, HOST, () => {
   console.log("[NOX 3.0] Gateway protegido ativo em " + HOST + ":" + PORT);
   console.log("[NOX 3.0] Endereços da rede: " + (addresses.join(" | ") || "não detectados"));
   console.log("[NOX 3.0] Token de pareamento (insira apenas no app NOX): " + TOKEN);
-  console.log("[NOX 3.0] WebSocket: ws://IP_DO_REDMi: " + PORT + "/ws");
+  console.log("[NOX 3.0] WebSocket: ws://IP_DO_REDMI_15C:" + PORT + "/ws");
 });
 
 function shutdown() {
