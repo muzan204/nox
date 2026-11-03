@@ -242,8 +242,9 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                         val device = data.optJSONObject("device")
                         val memory = device?.optJSONObject("memory")
                         val ram = memory?.optInt("usedPercent", -1) ?: -1
-                        val cores = device?.optInt("cpuCores", 0) ?: 0
-                        val status = if (ram >= 0) "ONLINE • RAM ${ram}% • ${cores} núcleos" else "ONLINE • servidor conectado"
+                        val load = device?.optJSONArray("loadAverage")?.optDouble(0, 0.0) ?: 0.0
+                        val wifi = device?.optJSONArray("network")?.length()?.let { it > 0 } ?: false
+                        val status = if (ram >= 0) "ONLINE • RAM ${ram}% • CPU ${"%.1f".format(Locale.US, load)} • ${if (wifi) "Wi-Fi" else "LAN"}" else "ONLINE • servidor conectado"
                         runOnUiThread {
                             face.statusText = status
                             if (face.state != "SPEAKING" && face.state != "LISTENING") face.state = state
