@@ -53,21 +53,15 @@ async function fetchText(rawUrl, config = {}) {
   const timeoutMs = Number(config.timeoutMs || DEFAULTS.timeoutMs);
 
   for (let redirects = 0; redirects <= 3; redirects++) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
     let response;
-    try {
-      response = await fetch(current.href, {
-        headers: {
-          "User-Agent": "NOX/3.1 (personal research assistant)",
-          "Accept": "text/html,text/plain;q=0.9"
-        },
-        redirect: "manual",
-        signal: controller.signal
-      });
-    } finally {
-      clearTimeout(timer);
-    }
+    response = await fetch(current.href, {
+      headers: {
+        "User-Agent": "NOX/3.1 (personal research assistant)",
+        "Accept": "text/html,text/plain;q=0.9"
+      },
+      redirect: "manual",
+      signal: AbortSignal.timeout(timeoutMs)
+    });
 
     if ([301, 302, 303, 307, 308].includes(response.status)) {
       const location = response.headers.get("location");
@@ -110,17 +104,10 @@ async function fetchText(rawUrl, config = {}) {
 
 async function searchResults(query, config = {}) {
   const endpoint = "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(String(query || "").slice(0, 240));
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), Number(config.timeoutMs || DEFAULTS.timeoutMs));
-  let response;
-  try {
-    response = await fetch(endpoint, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; NOX/3.1)", "Accept": "text/html" },
-      signal: controller.signal
-    });
-  } finally {
-    clearTimeout(timer);
-  }
+  const response = await fetch(endpoint, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; NOX/3.1)", "Accept": "text/html" },
+    signal: AbortSignal.timeout(Number(config.timeoutMs || DEFAULTS.timeoutMs))
+  });
   if (!response.ok) throw new Error("Busca web respondeu HTTP " + response.status + ".");
   const html = await response.text();
   const results = [];
@@ -130,7 +117,7 @@ async function searchResults(query, config = {}) {
     let href = decodeEntities(match[1]);
     try {
       const parsed = new URL(href, "https://duckduckgo.com");
-      if (parsed.searchParams.has("uddg")) href = decodeURIComponent(parsed.searchParams.get("uddg"));
+      if (parsed.searchParams.has("uddg")) href = parsed.searchParams.get("uddg");
     } catch {}
     const url = safeHttpsUrl(href);
     const title = stripHtml(match[2]).slice(0, 220);
