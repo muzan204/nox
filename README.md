@@ -71,6 +71,7 @@ Rotas autenticadas no gateway:
 - `GET /api/learning`: estado do aprendizado e data do último ciclo.
 - `POST /api/learning/run`: solicita um ciclo manual.
 - `GET /api/knowledge?q=termo`: consulta o conhecimento salvo.
+- `POST /api/knowledge` com `{"action":"forget","query":"termo"}`: apaga registros relacionados.
 
 ## Segurança
 
