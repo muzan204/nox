@@ -636,7 +636,7 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "3.0.0",
+        version: "3.1.0",
         faceState,
         time: new Date().toISOString()
       });
@@ -655,7 +655,7 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "3.0.0",
+        version: "3.1.0",
         faceState,
         chatBusy,
         voiceBusy,
@@ -707,7 +707,7 @@ const server = http.createServer(async (req, res) => {
       json(res, 200, {
         ok: true,
         service: "NOX Core",
-        version: "3.0.0",
+        version: "3.1.0",
         architecture: {
           brain: "Redmi 15C / Termux + llama.cpp + Qwen local",
           body: "Redmi 8 / Android + rosto + microfone + voz",
@@ -1149,7 +1149,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, HOST, () => {
   console.log("");
   console.log("======================================");
-  console.log("        NOX CORE 1.3 (Termux)");
+  console.log("        NOX CORE 3.1 (Termux)");
   console.log("======================================");
   console.log(`UI:      http://${HOST}:${PORT}/`);
   console.log(`API:     http://${HOST}:${PORT}/api/health`);
